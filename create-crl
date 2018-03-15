@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# VPN-Admin -- A script base system for managing an OpenVPN system
+#
+# Copyright (C) 2018 by Matthew Dwight.
+#
+# This code released under version 3 of the GNU GPL; see COPYING and the
+# LICENSE.GPL for this project for full licensing details.
+#
+
+# Generate the Certificate Revolation List from revoked certificates.
+
+# get system variables if needed
+. ./vars
+
+# STEP 1 - Generate a new crl.pem file
+cd ./easyrsa3/
+printf "Generating new Certificate Revocation List that expires in 10 years\n"
+export EASYRSA_CRL_DAYS=3650
+./easyrsa gen-crl
+r1=$?
+cd ..
+
+# STEP 2 - see if successful
+if [ $r1 -eq 0 ] ;
+    then
+        printf "Generation of CRL file was succesful.\n"
+    else
+        printf "WARNING: Generation of Certificate ReCRL file failed.\n"
+        exit 1
+fi
