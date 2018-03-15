@@ -59,6 +59,7 @@ fi
 # STEP 5 - clean up aborted certificate creation attempts
 rm -f $SETUP_DIR/easyrsa3/pki/private/*.key.*
 rm -f $SETUP_DIR/easyrsa3/pki/reqs/*.req.*
+rm -f $SETUP_DIR/easyrsa3/pki/issued/*.crt.*
 
 # STEP 6 - see if certificate already exists. If so then skip creating another one.
 CERT="${1//.crt}"
