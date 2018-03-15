@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# VPN-SimpleSetup -- A script base system for managing an OpenVPN system
+# VPN-Admin -- A script base system for managing an OpenVPN system
 #
 # Copyright (C) 2018 by Matthew Dwight.
 #
@@ -8,7 +8,7 @@
 # LICENSE.GPL for this project for full licensing details.
 #
 
-# Script to update OpenVPN system running locally.
+# Script to OpenVPN server running locally.
 
 # get system variables if needed
 . ./vars

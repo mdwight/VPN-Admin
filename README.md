@@ -8,33 +8,34 @@ Full details on how to setup and manage an OpenVPN system on the Raspberry can b
 
 ## Prerequisites
 
-The scripts have been tested on a Raspberry Pi model B boards running Raspbian Stretch Lite.   The scripts were tested agains OpenVPN v2.4 and easy-RSA v3.
+The scripts have been tested on a Raspberry Pi model B boards running Raspbian Stretch Lite.   The scripts were tested against OpenVPN v2.4 and easy-RSA v3.
 
 ## Examples
 
 The following shows the various CLI utilities available.
 
 ```
-### build the initial pki system or clean out old system.
+# build the initial pki system or clean out old system.
 ./build-new
 
-### Generate the required keys, certificates and configuration files.
+# Generate the required keys, certificates and configuration files.
 ./create-server {server-name} {server-template} [nopass]
 ./create-client {client-name} {client-template} [nopass]
-./delete-certificate {client-name or server-name}
+./create-crl
+./delete {client-name or server-name}
 ./show {ca|crl|crt|
 ./change-pass {ca, client-name or server-name}
 
-### Update and manage a local OpenVPN system.
-./update-crl {nocopy|COPY|RESTART}
+# Update and manage a local OpenVPN system.
+./update-crl {RESTART}
 ./update-server {server-name} [CLEAN]
 ./update-client {client-name} [CLEAN]
 ./system {stop|start|restart|status} [client-name or server-name]
 
-### Backup key, certificates and configuration.  
+# Backup key, certificates and configuration.  
 ./update-thumbdrive
 
-### Remove and restore keys for better security.
+# Remove and restore keys for better security.
 ./remove-keys
 ./restore-keys
 

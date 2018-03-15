@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# VPN-SimpleSetup -- A script base system for managing an OpenVPN system
+# VPN-Admin -- A script base system for managing an OpenVPN system
 #
 # Copyright (C) 2018 by Matthew Dwight.
 #
@@ -13,50 +13,18 @@
 # get system variables if needed
 . ./vars
 
-usage (){
-    printf "
-Usage: $0 nocopy|COPY|RESTART
-       nocopy - Don't copy to system
-       COPY - Copy to system
-       RESTART - Copy and restart system.\n"
-}       
-
-# STEP 1 - check if the right number of parameters were supplied.
-if  [ "$1" != "nocopy" ] && [ "$1" != "COPY" ] && [ "$1" != "RESTART" ] ; then
-    usage
-    exit 1
-fi
-
-# STEP 2 - Generate a new crl.pem file
-cd ./easyrsa3/
-printf "Generating new Certificate Removal List that expires in 10 years\n"
-export EASYRSA_CRL_DAYS=3650
-./easyrsa gen-crl
-r1=$?
-cd ..
-
-# STEP 3 - see if successful
-if [ $r1 -eq 0 ] ;
+# STEP 1 - See of crl.pem exist and if so copy to system.
+if [ -f $SETUP_DIR/easyrsa3/pki/crl.pem ] ; 
     then
-        printf "Generation of CRL file was succesful.\n"
+        sudo cp $SETUP_DIR/easyrsa3/pki/crl.pem $SYSTEM_DIR
     else
-        printf "WARNING: Generation of CRL file failed.\n"
+        printf "Run ./create-crl first.\n"
         exit 1
 fi
 
-# STEP 4 - See if we need to copy file to server.
-if  [ "$1" == "COPY" ] || [ "$1" == "RESTART" ]  ;
-    then
-        printf "Copying $SETUP_DIR/easyrsa3/pki/crl.pem to $SYSTEM_DIR/\n"
-        sudo cp ./easyrsa3/pki/crl.pem $SETUP_DIR
-    else
-        printf "Done: Server copy not updated as requested.\n"
-        exit 0
-fi
-
-# STEP 5 - Restart server if desired.
+# STEP 2 - Restart server if requested.
 if [ "$1"  == "RESTART" ] ;
     then
-        printf "Restarting OpenVPN server\n"
+        printf "Restarting OpenVPN system\n"
         sudo systemctl restart openvpn.service
 fi
