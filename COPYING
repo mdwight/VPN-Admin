@@ -1,16 +1,20 @@
-VPN-SimpleSetup -- A script base system for managing an OpenVPN system
+VPN-Admin -- A script base system for managing an OpenVPN system
 
 Copyright (C) 2018 by Matthew Dwight.
 
-VPN-SimpleSetup is free software: you can redistribute it and/or 
+VPN-Admin is free software: you can redistribute it and/or 
 modify it under the terms of the GNU General Public License as 
 published by the Free Software Foundation, either version 3 of the 
 License, or any later version.
 
-VPN-SimpleSetup is distributed in the hope that it will be useful,
+VPN-Admin is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with VPN-SimpleSetup.  If not, see <http://www.gnu.org/licenses/>.
+along with VPN-Admin.  If not, see <http://www.gnu.org/licenses/>.
+
+VPN-Admin is not linked to OpenSSL, OpenVPN or Easy-RSA, nor are they 
+included with VPN-Admin.  VPN-Admin is coupled to the these 
+applications and require your acceptance and installation of them.
