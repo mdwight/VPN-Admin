@@ -1,0 +1,87 @@
+#!/bin/bash
+
+# VPN-SimpleSetup -- A script base system for managing an OpenVPN system
+#
+# Copyright (C) 2018 by Matthew Dwight.
+#
+# This code released under version 3 of the GNU GPL; see COPYING and the
+# LICENSE.GPL for this project for full licensing details.
+#
+
+# Update USB thumbdrive
+
+# get system variables if needed
+. ./vars
+
+# STEP 1 - check to see if certificate authority key exists
+if [ ! -f ./easyrsa3/pki/private/ca.key ] ; then
+    printf "
+Error CA: ./easyrsa3/pki/private/ca.key does not exist
+This is not a complete system.
+
+Do you want to backup incomplete system? "
+
+verify "(Yes/No) > "
+
+    if [ $# -lt 1 ] ; then
+            usage
+            exit 1
+    fi            
+fi
+
+# STEP 2 - see if mount point directory has been created
+if [ ! -d $USB_MOUNT ] ; then
+    sudo mkdir $USB_MOUNT 
+fi
+
+# STEP 3 - see if usb-thumdrive is connected
+if [ ! -b $USB_DEV ] ; then
+    printf "USB Thumbdrive not connected!\n"
+    exit 1
+fi
+
+# STEP 4 - See if we should format this drive
+# This can be a bit dangerous. Lets not advertize it.
+
+# STEP 5 - mount thumbdrive if not mounted.
+if  ! mount|grep $USB_MOUNT > /dev/null  ; then
+    printf "Mounting USB-Thumbdrive.\n"
+    sudo mount -t vfat $USB_DEV $USB_MOUNT
+    if [ ! 0 -eq $? ] ; then
+        printf "Error - Problem mounting USB-Thumbdrive\n" 
+        exit 1
+    fi
+fi
+
+# STEP 6 - remove old backups
+if [ -d $UPDATE_DIR_BACKUP ] ; then
+    printf "Removing old secondary backup directory.\n"
+    sudo rm -fr $UPDATE_DIR_BACKUP
+fi
+
+# STEP 7 - see if last update exists and move to backup.
+if [ -d $UPDATE_DIR ] ; 
+    then
+        printf "Moving old primary backup to secondary backup.\n"
+        sudo mv $UPDATE_DIR $UPDATE_DIR_BACKUP
+        sudo mkdir $UPDATE_DIR
+    else
+        sudo mkdir $UPDATE_DIR
+fi
+
+# STEP 8 - Update thumbdrive with openvpn-setup
+printf "Backing up entire system to $UPDATE_DIR/openvpn-setup.\n"
+sudo zip -r $ZIPFILE *
+printf "Backing up server configs to $UPDATE_DIR/servers.\n"
+sudo cp -r ./servers $UPDATE_DIR
+printf "Backing up client configs to $UPDATE_DIR/clients.\n"
+sudo cp -r ./clients $UPDATE_DIR
+printf "Backing ccd diretory to $UPDATE_DIR/servers/ccd.\n"
+sudo cp -r ccd $UPDATE_DIR/servers
+printf "Backing up certificate revokation list to $UPDATE_DIR/servers.\n"
+sudo cp ./easyrsa3/pki/crl.pem $UPDATE_DIR/servers
+
+# STEP 9 - Unmount thumbrive
+printf "Unmounting USB Thumbdrive.\n"
+sudo umount $USB_MOUNT
+printf "USB Thumbdrive can be removed.\n"

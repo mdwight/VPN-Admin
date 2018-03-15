@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# VPN-SimpleSetup -- A script base system for managing an OpenVPN system
+#
+# Copyright (C) 2018 by Matthew Dwight.
+#
+# This code released under version 3 of the GNU GPL; see COPYING and the
+# LICENSE.GPL for this project for full licensing details.
+#
+
+# Restore keys from usb-thumbdrive
+
+# get system variables if needed
+. ./vars
+
+
+
+# STEP 1 - make sure the ca.key had been previously removed.
+if [ -f ./easyrsa3/pki/private/ca.key ] ; then
+    printf "
+Error CA: ./easyrsa3/pki/private/ca.key exists.
+
+Restore over current system. "
+
+    verify "(Yes/No) > "
+    if [ 0 != $? ] ; then 
+      exit 1 
+    fi
+fi
+
+# STEP 2 - see if usb-thumdrive is connected
+if [ ! -b $USB_DEV ] ; then
+    printf "USB Thumbdrive not connected!\n"
+    exit 1
+fi
+
+# STEP 3 - mount thumbdrive if not mounted.
+if  ! mount|grep $USB_MOUNT > /dev/null  ; then
+    sudo mount $USB_DEV $USB_MOUNT
+    if [ ! 0 -eq $? ] ; then
+        printf "Error - Problem mounting USB-Thumbdrive\n"
+        exit 1
+    fi
+fi
+
+# STEP2 - restore keys
+if [ -f $ZIPFILE ] ; then
+    unzip $ZIPFILE clients/*
+    unzip $ZIPFILE servers/*
+    unzip $ZIPFILE easyrsa3/pki/private/*
+    unzip $ZIPFILE easyrsa3/pki/ta.key
+fi    #!/bin/bash
+# Restore keys from usb-thumbdrive
+#

@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# VPN-SimpleSetup -- A script base system for managing an OpenVPN system
+#
+# Copyright (C) 2018 by Matthew Dwight.
+#
+# This code released under version 3 of the GNU GPL; see COPYING and the
+# LICENSE.GPL for this project for full licensing details.
+#
+
+# Don't do anything if we don't have easyras installed.
+if [ ! -f ./easyrsa3/easyrsa ] ; then
+    printf "Error: easyras3 has not been installed. \n"
+    exit 1
+fi
+
+# Main directories for setup and system.
+SETUP_DIR=$PWD
+SYSTEM_DIR="/etc/openvpn"
+
+# Thumbdrive for configuration backup and restore.
+USB_DEV="/dev/sda1"
+USB_MOUNT="/media/usb-thumbdrive"
+UPDATE_DIR="$USB_MOUNT/vpn-setup"
+UPDATE_DIR_BACKUP="$USB_MOUNT/vpn-setup-backup"
+ZIPFILE="$UPDATE_DIR/vpn-setup.zip"
+
+
+function verify {
+    if  [ $# -gt 0 ] ; then
+        printf "$1"
+    else
+        printf "Verify 'yes' or 'no' > "
+    fi
+
+    read USERINPUT
+
+    if [ $USERINPUT == "yes" ] || [ $USERINPUT == "YES" ] || [ $USERINPUT == "Yes" ] ; then
+        return 0
+    else
+        return 1
+    fi
+
+}

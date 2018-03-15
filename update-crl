@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# VPN-SimpleSetup -- A script base system for managing an OpenVPN system
+#
+# Copyright (C) 2018 by Matthew Dwight.
+#
+# This code released under version 3 of the GNU GPL; see COPYING and the
+# LICENSE.GPL for this project for full licensing details.
+#
+
+# Update CRL and optionally copy to system and restart.
+
+# get system variables if needed
+. ./vars
+
+usage (){
+    printf "
+Usage: $0 nocopy|COPY|RESTART
+       nocopy - Don't copy to system
+       COPY - Copy to system
+       RESTART - Copy and restart system.\n"
+}       
+
+# STEP 1 - check if the right number of parameters were supplied.
+if  [ "$1" != "nocopy" ] && [ "$1" != "COPY" ] && [ "$1" != "RESTART" ] ; then
+    usage
+    exit 1
+fi
+
+# STEP 2 - Generate a new crl.pem file
+cd ./easyrsa3/
+printf "Generating new Certificate Removal List that expires in 10 years\n"
+export EASYRSA_CRL_DAYS=3650
+./easyrsa gen-crl
+r1=$?
+cd ..
+
+# STEP 3 - see if successful
+if [ $r1 -eq 0 ] ;
+    then
+        printf "Generation of CRL file was succesful.\n"
+    else
+        printf "WARNING: Generation of CRL file failed.\n"
+        exit 1
+fi
+
+# STEP 4 - See if we need to copy file to server.
+if  [ "$1" == "COPY" ] || [ "$1" == "RESTART" ]  ;
+    then
+        printf "Copying $SETUP_DIR/easyrsa3/pki/crl.pem to $SYSTEM_DIR/\n"
+        sudo cp ./easyrsa3/pki/crl.pem $SETUP_DIR
+    else
+        printf "Done: Server copy not updated as requested.\n"
+        exit 0
+fi
+
+# STEP 5 - Restart server if desired.
+if [ "$1"  == "RESTART" ] ;
+    then
+        printf "Restarting OpenVPN server\n"
+        sudo systemctl restart openvpn.service
+fi

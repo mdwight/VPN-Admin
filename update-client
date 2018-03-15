@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# VPN-SimpleSetup -- A script base system for managing an OpenVPN system
+#
+# Copyright (C) 2018 by Matthew Dwight.
+#
+# This code released under version 3 of the GNU GPL; see COPYING and the
+# LICENSE.GPL for this project for full licensing details.
+#
+
+# Script to update client running locally.
+
+# get system variables if needed
+. ./vars
+
+usage (){
+    printf "
+Usage: $0 configuration_name
+
+Current client configurations files:
+------------------------------------\n"
+    if [ -d $SETUP_DIR/clients ] ; then
+        if [ "$(ls -A $SETUP_DIR/clients/*.conf)" ]; then
+            find $SETUP_DIR/clients/*.conf  -printf "%f\n"
+        fi
+    fi       
+
+}
+
+# STEP 1 - check if the right number of parameters were supplied.
+if [ $# -lt 1 ];
+    then
+    usage
+    exit 1
+fi
+
+# STEP 2 - Drop extension to certificate if supplied
+CONFIG="${1//.conf}"
+
+# STEP 3 - See if client config file exist
+if [ ! -f ./clients/$CONFIG.conf ] ; then
+    printf "Client Configuration file ./clients/$CONFIG.conf does not exist!\n"
+    printf "Update Failed.\n"
+    exit 1
+fi
+
+# STEP 3 - See if we should stop all client and servers and clean out files.
+if [ "$2"  == "CLEAN" ] ; 
+    then
+        printf "Stopping all client and servers and removing old config files from $OPENVPNDIR/\n"
+        sudo systemctl stop openvpn.service
+        sudo rm -f $SYSTEM_DIR/*.conf
+        sudo rm -f $SYSTEM_DIR/ccd/*
+        sudo rm -f $SYSTEM_DIR/ipp.txt
+        sleep 3
+    else
+        printf "Stopping Client configuration : $CONFIG\n"
+        sudo systemctl stop openvpn@$CONFIG.service    
+fi
+
+# STEP 4 - Copy over client configuration.
+sudo cp ./clients/$CONFIG.conf $SYSTEM_DIR/
+
+# STEP 5 - Start OpenVPN server(s)
+printf "Starting $CONFIG configuraiton.\n"
+sudo systemctl start openvpn@$CONFIG.service

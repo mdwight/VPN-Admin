@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# VPN-SimpleSetup -- A script base system for managing an OpenVPN system
+#
+# Copyright (C) 2018 by Matthew Dwight.
+#
+# This code released under version 3 of the GNU GPL; see COPYING and the
+# LICENSE.GPL for this project for full licensing details.
+#
+
+# View the various certificates in readable format.
+
+# get system variables if needed
+. ./vars
+
+function view_issued_certificate {
+    if [ ${1:(-4)} == ".crt" ] ; then
+        openssl x509 -in ./easyrsa3/pki/issued/$1 -text
+        exit 0
+    else
+        openssl x509 -in ./easyrsa3/pki/issued/$1.crt -text
+        exit 0
+    fi
+}
+
+# STEP 1 - check if the right number of parameters were supplied.
+if  [ "$1" != "ca" ] && [ "$1" != "crt" ] && [ "$1" != "crl" ]  ;
+    then
+        printf "
+Usage: $0 ca|crt|crl
+          ca - View the Certificate Authority
+         crl - View the certificate revokation list
+         crt - View a certificates issued
+    crt name - View a specific certificate\n"
+        exit 1
+fi
+
+# VIEW CA - View the Certificate Authority
+if [ "$1" == "ca" ] ; 
+    then
+        openssl x509 -in ./easyrsa3/pki/ca.crt -text
+        exit 0
+fi
+
+# VIEW CRL - View the Certificate Authority
+if [ "$1" == "crl" ] ; 
+    then
+        if [ -f $SETUP_DIR/easyrsa3/pki/crl.pem ] ; then
+            openssl crl -in ./easyrsa3/pki/crl.pem -noout -text
+        else
+            printf "
+The certificate revokation list has not been created yet.
+Run ./update-crl to generate list.\n"
+        fi    
+        exit 0
+fi
+
+# VIEW CRT - View the Certificate
+if [ "$1" == "crt" ] ; then
+    if [ "$2" == "" ] ; then
+        printf "
+Current certificate files:
+--------------------------\n"
+        cd ./easyrsa3/pki/issued
+        if [ "$(ls -A $SETUP_DIR/easyrsa3/pki/issued)" ]; then
+            find $SETUP_DIR/easyrsa3/pki/issued/*  -printf "%f\n"
+        fi       
+        cd $SETUP_DIR
+        exit 0
+    else
+        view_issued_certificate $2
+        exit 
+    fi
+fi

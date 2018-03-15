@@ -1,0 +1,18 @@
+# Generate keys and Configuration Files.
+build-new
+create-server {server_certificate_name} {server_template}
+create-client {client_certificate_name} {client_template} [nopass]
+delete-certificate {certificate_name}
+update-crl {nocopy|COPY|RESTART}
+show {ca|crl|crt} [certificate_name]
+change-pass {client_certificate_name}
+
+# Update local OpenVPN system 
+update-server {server_certificate_name} [CLEAN]
+update-client {client_certificate_name} [CLEAN]
+system {stop|start|restart|status} [certificate_name]
+
+# Backup Keys to Thumbdrive and Key Security
+update-thumbdrive
+remove-keys
+restore-keys
