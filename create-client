@@ -109,7 +109,7 @@ cp ./templates/$TEMPLATE.template ./clients/$CERT.conf
 #
 # Make sure we start on a new line for keys.
 printf '\n#\n' >> ./clients/$CERT.conf
-printf "!!!!! Do not change anything below this line. !!!!!\n" >> ./clients/$CERT.conf
+printf "# !!!!! Do not change anything below this line. !!!!!\n" >> ./clients/$CERT.conf
 #
 # Add tls-authority key
 printf '<tls-auth>\n' >> ./clients/$CERT.conf

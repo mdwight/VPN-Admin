@@ -117,7 +117,7 @@ cp ./templates/$TEMPLATE.template ./servers/$CERT.conf
 #
 # Make sure we start on a new line for keys.
 printf '\n#\n' >> ./servers/$CERT.conf
-printf "!!!!! Do not change anything below this line. !!!!!\n" >> ./servers/$CERT.conf
+printf "# !!!!! Do not change anything below this line. !!!!!\n" >> ./servers/$CERT.conf
 #
 # Add diffie-helman
 printf '<dh>\n' >> ./servers/$CERT.conf
