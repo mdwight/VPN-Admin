@@ -17,24 +17,46 @@
 ca_check
 
 function view_issued_certificate {
-    if [ ${1:(-4)} == ".crt" ] ; then
-        openssl x509 -in ./easyrsa3/pki/issued/$1 -text
-        exit 0
-    else
-        openssl x509 -in ./easyrsa3/pki/issued/$1.crt -text
-        exit 0
+    if [ ${1:(-4)} == ".crt" ] ; 
+        then
+            fn=$1
+        else
+            fn="$1.crt"
     fi
+    openssl x509 -in ./easyrsa3/pki/issued/$fn -text 
+    return 0
+}
+
+function view_configuration {
+    if [ ${1:(-5)} == ".conf" ] ; 
+        then
+            fn=$1
+        else
+            fn="$1.conf"
+    fi
+    echo "File is $fn"
+    if [ -f $SETUP_DIR/servers/$fn ] ; then
+        cat $SETUP_DIR/servers/$fn
+    fi
+    
+    if [ -f $SETUP_DIR/clients/$fn ] ; then
+        cat $SETUP_DIR/clients/$fn 
+    fi
+
+    return 0
 }
 
 # STEP 1 - check if the right number of parameters were supplied.
-if  [ "$1" != "ca" ] && [ "$1" != "crt" ] && [ "$1" != "crl" ]  ;
+if  [ "$1" != "ca" ] && [ "$1" != "cert" ] && [ "$1" != "conf" ] && [ "$1" != "crl" ]  ;
     then
         printf "
 Usage: $0 ca|crt|crl
           ca - View the Certificate Authority
          crl - View the certificate revokation list
-         crt - View a certificates issued
-    crt name - View a specific certificate\n"
+        cert - View a list of certificates issued
+   cert name - View a specific certificate
+        conf - View a list of configuration files
+   conf name - View a specific certificate\n"
         exit 1
 fi
 
@@ -58,8 +80,8 @@ Run ./create-crl to generate list.\n"
         exit 0
 fi
 
-# VIEW CRT - View the Certificate
-if [ "$1" == "crt" ] ; then
+# VIEW CERT - View the Certificate
+if [ "$1" == "cert" ] ; then
     if [ "$2" == "" ] ; then
         printf "
 Current certificate files:
@@ -72,6 +94,32 @@ Current certificate files:
         exit 0
     else
         view_issued_certificate $2
+        exit 
+    fi
+fi
+
+# VIEW CONF - View configuration files.
+if [ "$1" == "conf" ] ; then
+    if [ "$2" == "" ] ; then
+        printf "
+Current configuration files:
+----------------------------\n"
+        if [ -d "$SETUP_DIR/servers" ] ; then
+            cd $SETUP_DIR/servers
+            if [ "$(ls -A $SETUP_DIR/servers)" ]; then
+                find $SETUP_DIR/servers/*.conf  -printf "%f\n"
+            fi       
+        fi    
+        if [ -d "$SETUP_DIR/clients" ] ; then
+            cd $SETUP_DIR/clients
+            if [ "$(ls -A $SETUP_DIR/clients)" ]; then
+                find $SETUP_DIR/clients/*.conf  -printf "%f\n"
+            fi       
+        fi    
+        cd $SETUP_DIR
+        exit 0
+    else
+        view_configuration $2
         exit 
     fi
 fi
