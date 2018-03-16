@@ -15,10 +15,8 @@ The scripts have been tested on Raspberry Pi (1,2 and 3) model B boards running 
 The following shows the various CLI utilities available.
 
 ```
-# Build the initial pki system or clean out the current system.
-./build-new
-
 # Generate the required keys, certificates and configuration files.
+./create-system
 ./create-server {server-name} {server-template} [nopass]
 ./create-client {client-name} {client-template} [nopass]
 ./create-crl
@@ -31,6 +29,8 @@ The following shows the various CLI utilities available.
 ./update-server {server-name} [CLEAN]
 ./update-client {client-name} [CLEAN]
 ./system {stop|start|restart|status} [client-name|server-name]
+./system-logs {log-file-name} [FOLLOW]
+./system-ipp
 
 # Backup key, certificates and configuration.  
 ./update-thumbdrive
