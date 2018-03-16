@@ -16,6 +16,9 @@
 # make sure there is a Certificate Authority for this system.
 #ca_check
 
+# make sure user has sudo access
+sudo_check
+
 # STEP 1 - make sure the ca.key had been previously removed.
 if [ -f ./easyrsa3/pki/private/ca.key ] ; then
     printf "
