@@ -16,6 +16,9 @@
 # make sure there is a Certificate Authority for this system.
 #ca_check
 
+# make sure user has sudo access
+sudo_check
+
 usage (){
     printf "
 Usage: $0 {logfile} [FOLLOW]
