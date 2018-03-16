@@ -16,6 +16,9 @@
 # make sure there is a Certificate Authority for this system.
 ca_check
 
+# make sure user has sudo access
+sudo_check
+
 usage (){
     printf "
 Usage: $0 configuration_name
@@ -56,6 +59,7 @@ if [ "$2"  == "CLEAN" ] ;
         sudo rm -f $SYSTEM_DIR/*.conf
         sudo rm -f $SYSTEM_DIR/ccd/*
         sudo rm -f $SYSTEM_DIR/ipp.txt
+        sudo rm -f $SYSTEM_DIR/*.log
     else
         printf "Stopping configuration : $1\n"
         sudo systemctl stop openvpn@$1.service

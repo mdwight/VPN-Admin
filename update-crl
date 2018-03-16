@@ -16,6 +16,10 @@
 # make sure there is a Certificate Authority for this system.
 ca_check
 
+
+# make sure user has sudo access
+sudo_check
+
 # STEP 1 - See of crl.pem exist and if so copy to system.
 if [ -f $SETUP_DIR/easyrsa3/pki/crl.pem ] ; 
     then
