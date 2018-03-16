@@ -20,6 +20,13 @@ ca_check
 if [ -f $SETUP_DIR/easyrsa3/pki/crl.pem ] ; 
     then
         sudo cp $SETUP_DIR/easyrsa3/pki/crl.pem $SYSTEM_DIR
+        if [ 0 -eq $? ] ; 
+            then
+                printf "Certificate revocation list copied to system.\n"
+            else
+                printf "ERROR: Copying certificate revocation list to system.\n"
+                exit 1
+        fi
     else
         printf "Run ./create-crl first.\n"
         exit 1

@@ -29,6 +29,6 @@ if [ $r1 -eq 0 ] ;
     then
         printf "Generation of CRL file was succesful.\n"
     else
-        printf "WARNING: Generation of Certificate ReCRL file failed.\n"
+        printf "WARNING: Generation of Certificate revocation file has failed.\n"
         exit 1
 fi
