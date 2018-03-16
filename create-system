@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# VPN-SimpleSetup -- A script base system for managing an OpenVPN system
+#
+# Copyright (C) 2018 by Matthew Dwight.
+#
+# This code released under version 3 of the GNU GPL; see COPYING and the
+# LICENSE.GPL for this project for full licensing details.
+#
+
+# Used to initialize and clean out an old system.  Does not erase templates.
+
+# get system variables if needed
+. ./vars
+
+# make sure there is a Certificate Authority for this system.
+#ca_check
+
+verify "Do you want to initialize the current system (Yes/No) > "
+if [ 0 != $? ] ; then 
+    exit 1 
+fi
+
+verify "Are you sure (Yes/No) > "
+if [ 0 != $? ] ; then 
+    exit 1 
+fi
+
+# STEP 1 - Clear our client and server configuration files
+printf "STEP 1 of 6 : - Removing server and client configs ==============================\n"
+rm -fr clients
+rm -fr servers        
+sleep 1
+printf "Done \n\n\n"
+
+# STEP 2 - Remove previous PKI system if it existed.
+printf "STEP 2 of 6 : - Removing ./easyrsa3/pki directory ================================\n"
+rm -fr ./easyrsa3/pki
+sleep 1
+printf "Done \n\n\n"
+
+cd ./easyrsa3/
+
+printf "STEP 3 of 6 : ./easyrsa init-pki  =============================================\n"
+# STEP 3 - Generate new PKI system
+./easyrsa init-pki
+sleep 1
+printf "Done \n\n\n"
+
+# STEP 4 - Generate ta.key
+printf "STEP 4 of 6 : openvpn --genkey --secret pki/ta.key ============================\n"
+openvpn --genkey --secret pki/ta.key
+sleep 1
+printf "Done \n\n\n"
+
+# STEP 5 - Generate new certificate authority
+printf "STEP 5 of 6 : ./easyrsa build-ca ==============================================\n"
+./easyrsa build-ca
+sleep 1
+printf "Done \n\n\n"
+
+# STEP 6 - Generate Diffie-Helmman key
+printf "STEP 6 of 6 : ./easyrsa gen-dh ================================================\n"
+./easyrsa gen-dh
+printf "Done \n\n\n"
+
+cd $SETUP_DIR
