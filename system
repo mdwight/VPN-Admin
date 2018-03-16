@@ -37,17 +37,7 @@ if [ $# -lt 1 ] ; then
     exit 1
 fi
 
-# Check if the right number of parameters were supplied.
-if  [ "$1" == "" ] ; then
-    printf "Usage: $0 stop|start|restart|status  [configuation-name]\n\n"
-    printf "Current active configuration files:\n"
-    cd $SYSTEM_DIR/
-    ls -1 *.conf
-    cd $SETUP_DIR
-    exit 1
-fi
-
-# see if a configuration file extension provided.
+# Run command without specific instance.
 if [ "$2" == "" ] ; 
     then
 
@@ -77,7 +67,7 @@ if [ "$2" == "" ] ;
             systemctl --no-pager status openvpn@*.service
             exit 0
         fi
-
+# Run command with specific instance.
     else
 
         CONFIG="${2//.conf}"
