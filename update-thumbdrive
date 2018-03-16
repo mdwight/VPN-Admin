@@ -51,7 +51,7 @@ fi
 
 # STEP 5 - mount thumbdrive if not mounted.
 if  ! mount|grep $USB_MOUNT > /dev/null  ; then
-    printf "Mounting USB-Thumbdrive.\n"
+    printf "Mounting $USB_MOUNT.\n"
     sudo mount -t vfat $USB_DEV $USB_MOUNT
     if [ ! 0 -eq $? ] ; then
         printf "Error - Problem mounting USB-Thumbdrive\n" 
@@ -98,5 +98,5 @@ sudo cp $SETUP_DIR/ccd/* $USB_MOUNT/ccd/
 
 # STEP 9 - Unmount thumbrive
 printf "Unmounting USB Thumbdrive.\n"
-sudo umount $USB_MOUNT
+sudo umount $USB_DEV
 printf "USB Thumbdrive can be removed.\n"
