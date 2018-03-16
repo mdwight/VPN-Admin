@@ -21,9 +21,8 @@ SYSTEM_DIR="/etc/openvpn"
 # Thumbdrive for configuration backup and restore.
 USB_DEV="/dev/sda1"
 USB_MOUNT="/media/usb-thumbdrive"
-UPDATE_DIR="$USB_MOUNT/vpn-setup"
-UPDATE_DIR_BACKUP="$USB_MOUNT/vpn-setup-backup"
-ZIPFILE="$UPDATE_DIR/vpn-setup.zip"
+ZIPFILE="$USB_MOUNT/vpn-admin.zip"
+ZIPFILEBKUP="$USB_MOUNT/vpn-admin-backup.zip"
 
 
 function verify {
@@ -59,4 +58,12 @@ function ca_check {
         printf "ERROR: The keys have been removed.  Run ./restore-keys and try again.\n" 
         exit 11
     fi              
-}    
+}  
+
+function sudo_check {
+    # make sure user had sudo access
+    sudo printf ""
+    if [ $? -ne 0 ] ; then 
+        exit 1
+    fi        
+}  
