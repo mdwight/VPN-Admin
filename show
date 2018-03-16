@@ -13,6 +13,9 @@
 # get system variables if needed
 . ./vars
 
+# make sure there is a Certificate Authority for this system.
+ca_check
+
 function view_issued_certificate {
     if [ ${1:(-4)} == ".crt" ] ; then
         openssl x509 -in ./easyrsa3/pki/issued/$1 -text

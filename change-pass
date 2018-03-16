@@ -13,6 +13,9 @@
 # get system variables if needed
 . ./vars
 
+# make sure there is a Certificate Authority for this system.
+ca_check
+
 usage (){
     printf "
 Usage: $0 key_name

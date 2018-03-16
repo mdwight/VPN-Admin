@@ -13,6 +13,9 @@
 # get system variables if needed
 . ./vars
 
+# make sure there is a Certificate Authority for this system.
+ca_check
+
 usage (){
     printf "
 Usage: $0 certificate_name template [nopass]
@@ -31,35 +34,36 @@ List of template files:
     fi
 }
 
-# STEP 1 - check if the right number of parameters were supplied.
+# STEP 1 - clean up aborted certificate creation attempts
+rm -f $SETUP_DIR/easyrsa3/pki/private/*.key.*
+rm -f $SETUP_DIR/easyrsa3/pki/reqs/*.req.*
+rm -f $SETUP_DIR/easyrsa3/pki/issued/*.crt.*
+
+# STEP 2 - check if the right number of parameters were supplied.
 if [ $# -lt 2 ] ; then
     usage
     exit 1
 fi
 
-# STEP 2 - check to see if template file exists
+# STEP 3 - check to see if template file exists
 TEMPLATE="${2//.template}"
 if [ ! -f ./templates/$TEMPLATE.template ] ; then
     printf "Error TMPL: ./templates/$TEMPLATE.template does not exist.\n"
     exit 1
 fi
 
-# STEP 3 - check to see if tls-auth key file exists
+# STEP 4 - check to see if tls-auth key file exists
 if [ ! -f ./easyrsa3/pki/ta.key ] ; then
     printf "Error TA: ./easyrsa3/pki/ta.key does not exist\n"
     exit 1
 fi
 
-# STEP 4 - check to see if certificate authority key exists
+# STEP 5 - check to see if certificate authority key exists
 if [ ! -f ./easyrsa3/pki/private/ca.key ] ; then
     printf "Error CA: ./easyrsa3/pki/private/ca.key does not exist\n"
     exit 1
 fi
 
-# STEP 5 - clean up aborted certificate creation attempts
-rm -f $SETUP_DIR/easyrsa3/pki/private/*.key.*
-rm -f $SETUP_DIR/easyrsa3/pki/reqs/*.req.*
-rm -f $SETUP_DIR/easyrsa3/pki/issued/*.crt.*
 
 # STEP 6 - see if certificate already exists. If so then skip creating another one.
 CERT="${1//.crt}"

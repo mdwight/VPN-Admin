@@ -13,6 +13,9 @@
 # get system variables if needed
 . ./vars
 
+# make sure there is a Certificate Authority for this system.
+ca_check
+
 # STEP 1 - check to see if certificate authority key exists
 if [ ! -f ./easyrsa3/pki/private/ca.key ] ; then
     printf "

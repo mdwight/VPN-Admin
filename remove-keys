@@ -13,6 +13,9 @@
 # get system variables if needed
 . ./vars
 
+# make sure there is a Certificate Authority for this system.
+ca_check
+
 # STEP1 - Make sure the keys are to be erased.
 verify "Have you made a backup?  (Yes/No) > "
 if [ 0 != $? ] ; then 

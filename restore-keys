@@ -13,7 +13,8 @@
 # get system variables if needed
 . ./vars
 
-
+# make sure there is a Certificate Authority for this system.
+ca_check
 
 # STEP 1 - make sure the ca.key had been previously removed.
 if [ -f ./easyrsa3/pki/private/ca.key ] ; then
