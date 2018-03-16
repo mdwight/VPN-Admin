@@ -16,6 +16,9 @@
 # make sure there is a Certificate Authority for this system.
 ca_check
 
+# make sure user has sudo access
+sudo_check
+
 # STEP 1 - check to see if certificate authority key exists
 if [ ! -f ./easyrsa3/pki/private/ca.key ] ; then
     printf "
@@ -56,33 +59,42 @@ if  ! mount|grep $USB_MOUNT > /dev/null  ; then
     fi
 fi
 
-# STEP 6 - remove old backups
-if [ -d $UPDATE_DIR_BACKUP ] ; then
-    printf "Removing old secondary backup directory.\n"
-    sudo rm -fr $UPDATE_DIR_BACKUP
+# STEP 6 - remove secondary backup if a primary one exists.
+#        - then move primary to seconday backup.
+if [ -f $ZIPFILE ] ; then
+    if [ -f $ZIPFILEBKUP ] ; then
+        printf "Removing old secondary backup file.\n"
+        sudo rm $ZIPFILEBKUP
+    fi
+    sudo mv $ZIPFILE $ZIPFILEBKUP
 fi
 
-# STEP 7 - see if last update exists and move to backup.
-if [ -d $UPDATE_DIR ] ; 
-    then
-        printf "Moving old primary backup to secondary backup.\n"
-        sudo mv $UPDATE_DIR $UPDATE_DIR_BACKUP
-        sudo mkdir $UPDATE_DIR
-    else
-        sudo mkdir $UPDATE_DIR
-fi
-
-# STEP 8 - Update thumbdrive with openvpn-setup
-printf "Backing up entire system to $UPDATE_DIR/openvpn-setup.\n"
+# STEP 8 - Backup active current system to thumbdrive.
+printf "Backing up entire system to $ZIPFILE.\n"
 sudo zip -r $ZIPFILE *
-printf "Backing up server configs to $UPDATE_DIR/servers.\n"
-sudo cp -r ./servers $UPDATE_DIR
-printf "Backing up client configs to $UPDATE_DIR/clients.\n"
-sudo cp -r ./clients $UPDATE_DIR
-printf "Backing ccd diretory to $UPDATE_DIR/servers/ccd.\n"
-sudo cp -r ccd $UPDATE_DIR/servers
-printf "Backing up certificate revokation list to $UPDATE_DIR/servers.\n"
-sudo cp ./easyrsa3/pki/crl.pem $UPDATE_DIR/servers
+if [ $? -ne 0 ] ; then
+    rm -f $ZIPFILE 
+    printf "ERROR: Update of USB Thumbdrive failed."
+    exit 1
+fi
+    
+
+# STEP 9 - Copy config file over to thumbdrive
+
+printf "Updating system configuration files on thumbdrive.\n"
+sudo rm -f $USB_MOUNT/*.conf
+sudo rm -f $USB_MOUNT/*.ovpn
+sudo rm -f $USB_MOUNT/crl.pem
+if [ -d "$USB_MOUNT/ccd" ] ; 
+    then
+        sudo rm -f $USB_MOUNT/ccd/*
+    else
+        sudo mkdir $USB_MOUNT/ccd
+fi               
+sudo cp $SETUP_DIR/servers/* $USB_MOUNT/
+sudo cp $SETUP_DIR/clients/* $USB_MOUNT/
+sudo cp $SETUP_DIR/easyrsa3/pki/crl.pem $USB_MOUNT/
+sudo cp $SETUP_DIR/ccd/* $USB_MOUNT/ccd/
 
 # STEP 9 - Unmount thumbrive
 printf "Unmounting USB Thumbdrive.\n"
