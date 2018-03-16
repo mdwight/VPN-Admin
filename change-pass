@@ -40,6 +40,7 @@ openssl rsa -aes256 -in $KEY.key -out $KEY.new
 if [ $? -eq 0 ] ; then
     shred $KEY.key
     mv $KEY.new $KEY.key
+    printf "Password changed for $KEY.\n"
 fi
 
 cd $SETUP_DIR

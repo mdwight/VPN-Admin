@@ -53,7 +53,7 @@ if [ "$1" == "crl" ] ;
         else
             printf "
 The certificate revokation list has not been created yet.
-Run ./update-crl to generate list.\n"
+Run ./create-crl to generate list.\n"
         fi    
         exit 0
 fi
