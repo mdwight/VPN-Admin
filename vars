@@ -42,11 +42,11 @@ function verify {
             
         if [ ${USERINPUT^^} == "YES" ] ; then
             printf 'YES\n'
-            exit 0
+            return 0
 	    fi
     	if [ ${USERINPUT^^} == "NO" ] ; then
     	    printf 'NO\n'
-            exit 1
+            return 1
     	fi
     done
 }
