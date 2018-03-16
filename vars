@@ -20,7 +20,7 @@ SYSTEM_DIR="/etc/openvpn"
 
 # Thumbdrive for configuration backup and restore.
 USB_DEV="/dev/sda1"
-USB_MOUNT="/media/usb-thumbdrive"
+USB_MOUNT="/media/thumbdrive"
 ZIPFILE="$USB_MOUNT/vpn-admin.zip"
 ZIPFILEBKUP="$USB_MOUNT/vpn-admin-backup.zip"
 
