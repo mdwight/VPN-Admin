@@ -46,7 +46,7 @@ persist-tun
 # ==============================================
 # Logging - adjust for testing or debugging
 #
-status openvpn-status.log
-log openvpn.log
+status openvpn-status-server.log
+log openvpn-server.log
 verb 3
 mute 20

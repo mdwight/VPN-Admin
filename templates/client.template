@@ -9,7 +9,8 @@
 # 
 # ==============================================
 # Variable depending on setup topology
-remote 203.0.113.2 1194
+remote 127.0.0.1
+;remote 203.0.113.2 1194
 ;remote vpntest.selfip.org 1194
 ;redirect-gateway def1
 
@@ -30,7 +31,7 @@ persist-tun
 
 # ==============================================
 # Logging - adjust for testing or debugging
-status openvpn-status.log
-log openvpn.log
+status openvpn-status-client.log
+log openvpn-client.log
 verb 3
 mute 20
