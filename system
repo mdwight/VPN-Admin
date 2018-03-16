@@ -14,7 +14,7 @@
 . ./vars
 
 # make sure there is a Certificate Authority for this system.
-ca_check
+#ca_check
 
 usage (){
     printf "
