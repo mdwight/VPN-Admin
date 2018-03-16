@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# VPN-Admin - A script base system for managing an OpenVPN system
+#
+# Copyright (C) 2018 by Matthew Dwight.
+#
+# This code released under version 3 of the GNU GPL; see COPYING and the
+# LICENSE.GPL for this project for full licensing details.
+#
+
+# View log files
+
+# get system variables if needed
+. ./vars
+
+# make sure there is a Certificate Authority for this system.
+#ca_check
+
+usage (){
+    printf "
+Usage: $0 {logfile} [FOLLOW]
+
+Current system log files:
+-------------------------\n"
+
+    if [ -d $SYSTEM_DIR ] ; then
+        if [ "$(ls -A $SYSTEM_DIR/*.log)" ]; then
+            find $SYSTEM_DIR/*.log  -printf "%f\n"
+        fi
+    fi       
+    return 0
+}
+
+# STEP 1 - check if the right number of parameters were supplied.
+if [ $# -lt 1 ] ; then
+    usage
+    exit 1
+fi
+
+# STEP 2 = Print logfile
+LOGFN="${1//.log}.log"
+echo "Logfile is $LOGFN"
+
+if [ -f "$SYSTEM_DIR/$LOGFN" ] ;
+    then
+        if [ $# -gt 1 ] ; 
+            then
+            if [ $2 == "FOLLOW" ] ; then
+                sudo tail -f $SYSTEM_DIR/$LOGFN
+            fi    
+        else
+            sudo cat $SYSTEM_DIR/$LOGFN
+        fi        
+    else
+        printf "ERROR: Log file: $LOGFN not found.\n"
+fi        
