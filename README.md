@@ -14,9 +14,9 @@ The scripts have been tested on Raspberry Pi (1,2 and 3) model B boards running 
 
 These are three main scripts. They are as follows.
 
-   - ./config - used to manager the OpenVPN configuration.
+   - ./config - used to manage the OpenVPN configuration.
    - ./system - used to manage the OpenVPN service running on the Pi.
-   - ./view - used to view the various configuration, certificates and logs.\
+   - ./view - used to view the various configuration, certificates and logs.
    
 ## License
 

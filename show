@@ -8,8 +8,21 @@
 # LICENSE.GPL for this project for full licensing details.
 #
 
-# get system variables
-. ./vars
+# Script to display the various configuration and log files.
+
+# Main directories for setup and system.
+SYSTEM_DIR="/etc/openvpn"
+
+# If user want to modify some of the defaults.
+if [ -f ./vars ] ; then
+    . ./vars
+fi
+
+# Root directory for configuration.
+SETUP_DIR=$PWD
+
+# Bring in shared functions
+. ./shared.sh
 
 function usage {
     printf "
@@ -36,12 +49,14 @@ Running System Commands
 }
 
 function ca {
+    easyrsa_check
     ca_check
     openssl x509 -in ./easyrsa3/pki/ca.crt -text
     exit 0
 }
 
 function crl {
+    easyrsa_check
     ca_check
     if [ -f $SETUP_DIR/easyrsa3/pki/crl.pem ] ; then
         openssl crl -in ./easyrsa3/pki/crl.pem -noout -text
@@ -53,6 +68,7 @@ function crl {
 }
 
 function cert {
+    easyrsa_check
     ca_check
     if [ "" == "$1" ] ; then
         printf "Current Certificates:\n---------------------\n"
@@ -133,13 +149,13 @@ function status {
 
 function log {
     sudo_check
-    sudo cat /etc/openvpn/openvpn-server.log
+    sudo cat $SYSTEM_DIR/openvpn-server.log
     exit 0
 }
 
 function statlog {
     sudo_check
-    sudo cat /etc/openvpn/openvpn-status-server.log
+    sudo cat $SYSTEM_DIR/openvpn-status-server.log
     exit 0
 }
 
@@ -153,6 +169,7 @@ function  port {
     sudo_check
     sudo sudo lsof -i 4 | grep openvpn
     exit 0
+
 }
 
 # Call the requested function.

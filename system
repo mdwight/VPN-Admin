@@ -8,14 +8,21 @@
 # LICENSE.GPL for this project for full licensing details.
 #
 
-# Script to manage OpenVPN service.
+# Script to manage the OpenVPN service and tie into the configurations.
 
-# get system variables if needed
-. ./vars
+# Main directories for setup and system.
+SYSTEM_DIR="/etc/openvpn"
 
-# make sure there is a Certificate Authority for this system.
-#ca_check
+# If user want to modify some of the defaults.
+if [ -f ./vars ] ; then
+    . ./vars
+fi
 
+# Root directory for configuration.
+SETUP_DIR=$PWD
+
+# Bring in shared functions
+. ./shared.sh
 
 function usage {
 
@@ -117,7 +124,6 @@ restart - load just the CRL and restart.
     ;;
 esac    
 }
-
  
 function load {
     # STEP 1 - Drop extension to certificate if supplied
@@ -216,7 +222,6 @@ function restart {
     # STEP 5 - See if it is running
     status
 }
-
 
 function start {
     # STEP 1 - Make sure user has sudo access

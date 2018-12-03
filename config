@@ -1,5 +1,6 @@
 #!/bin/bash
 # 
+
 # VPN-Admin -- A script base system for managing a small OpenVPN system
 #
 # Copyright (C) 2018 by Matthew Dwight.
@@ -7,8 +8,26 @@
 # This code released under version 3 of the GNU GPL; see COPYING and the 
 # LICENSE.GPL for this project for full licensing details.
 
-# get system variables
-. ./vars
+# Script to manage the configuration of OpenVPN with Easy-RSA3
+
+# Default to nopass for CA and Certificates. 
+NOPASS="nopass"
+
+# Set expiry dates on Certificates 
+export EASYRSA_CRL_DAYS=7305      # 20 years
+export EASYRSA_CA_EXPIRE=7305     # 20 years
+export EASYRSA_CERT_EXPIRE=7305   # 20 years
+
+# If user want to modify some of the above defaults.
+if [ -f ./vars ] ; then
+    . ./vars
+fi
+
+# Root directory for configuration.
+SETUP_DIR=$PWD
+
+# Bring in shared functions
+. ./shared.sh
 
 function usage {
 
@@ -165,6 +184,8 @@ esac
 }
 
 function initialize {
+    easyrsa_check  # do we even have a system to initialize?
+    
     if [ "ASKPASS" == "${1^^}" ] || [ "ASKPASS" == "${2^^}" ]; then 
         NOPASS=""
     fi
@@ -255,6 +276,9 @@ function initialize {
 }
 
 function create {
+    easyrsa_check   # has easyrsa3 been installed?
+    ca_check        # has easyrsa3 been initialized?
+    
     if [ "ASKPASS" == "${3^^}" ] ; then  # requesting to add pass-phrase
         NOPASS=""
     fi
@@ -444,6 +468,9 @@ function create {
 }
 
 function delete {
+    easyrsa_check   # has easyrsa3 been installed?
+    ca_check        # has easyrsa3 been initialized?
+
     if [ $# -lt 1 ] ; then   # need to supply atleast one parameter.
         usage delete
         exit 1
@@ -497,7 +524,6 @@ function delete {
 
     # STEP 7 - Generate a Certificate Revocation List
     printf "Generating Certificate Revocation List\n"
-    export EASYRSA_CRL_DAYS=3650
     cd ./easyrsa3/
     if ./easyrsa gen-crl ; then 
         printf "Generation of CRL file was successful.\n\n"
@@ -510,6 +536,9 @@ function delete {
 }
 
 function pass {
+    easyrsa_check   # has easyrsa3 been installed?
+    ca_check        # has easyrsa3 been initialized?
+
     # STEP 1 - Check parameters supplied to script.
     if [ $# -lt 1 ] ; then # needs at least one parameters supplied
         usage pass
@@ -546,6 +575,9 @@ function pass {
 }
 
 function crl {
+    easyrsa_check   # has easyrsa3 been installed?
+    ca_check        # has easyrsa3 been initialized?
+
     # Generate a new crl.pem file
     cd ./easyrsa3/
     printf "Generating new Certificate Revocation List\n"
