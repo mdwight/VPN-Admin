@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# VPN-Admin -- A script base system for managing an OpenVPN system
+# VPN-Admin -- A script base system for managing a small OpenVPN system
 #
 # Copyright (C) 2018 by Matthew Dwight.
 #
@@ -8,22 +8,26 @@
 # LICENSE.GPL for this project for full licensing details.
 #
 
-# Don't do anything if we don't have easyras installed.
+# General utilizes and variables used by VPN-Admin Scripts.
+
+# See if easyras3 has been installed.
 if [ ! -f ./easyrsa3/easyrsa ] ; then
-    printf "Error: easyras3 has not been installed. \n"
+    printf "Easy-RSA3 not installed.  Run the following command to install.\n"
+    printf "bash < (curl -sL https://raw.githubuserconntent.com/mdwight/vpn-admin-install/master/resources/install-easyrsa3-install)\n" 
     exit 1
 fi
+
+# Default to nopass for CA and Certificates. 
+NOPASS="nopass"
+
+# Set expiry dates on Certificates 
+export EASYRSA_CRL_DAYS=7305      # 20 years
+export EASYRSA_CA_EXPIRE=7305     # 20 years
+export EASYRSA_CERT_EXPIRE=7305   # 20 years
 
 # Main directories for setup and system.
 SETUP_DIR=$PWD
 SYSTEM_DIR="/etc/openvpn"
-
-# Thumbdrive for configuration backup and restore.
-USB_DEV="/dev/sda1"
-USB_MOUNT="/media/thumbdrive"
-ZIPFILE="$USB_MOUNT/vpn-admin.zip"
-ZIPFILEBKUP="$USB_MOUNT/vpn-admin-backup.zip"
-
 
 function verify {
     while true ; do
@@ -51,7 +55,7 @@ function verify {
 function ca_check {
     # see if system has been initialized and the CA created.
     if [ ! -f "$SETUP_DIR/easyrsa3/pki/ca.crt" ] ; then
-        printf "ERROR: The system has not been initialized. Run ./build-new to initialize.\n" 
+        printf "ERROR: The system has not been initialized. Run ./initialize to initialize.\n" 
         exit 10
     fi              
     if [ ! -f "$SETUP_DIR/easyrsa3/pki/private/ca.key" ] ; then

@@ -1,36 +1,39 @@
 # ***************************************************************
 # * Client side configuration template for use with the         *
 # * OpenVPN setup guide from Matthew Dwight.                    *
-# * The setup guide can be found at:                            *
-# * http://www.mdwight.com/OpenVPN-Setup-Guide                  *
+# * The setup guides can be found at:                           *
+# * http://www.mdwight.com/OpenVPN                              *
 # * For more information on parameters see:                     *
 # * https://community.openvpn.net/openvpn/wiki/Openvpn24ManPage *
 # ***************************************************************
 # 
-# ==============================================
-# Variable depending on setup topology
-remote 127.0.0.1
-;remote 203.0.113.2 1194
-;remote vpntest.selfip.org 1194
+# ================================================
+# Variable depending on topology.
+#
+remote 10.1.1.3 2294
+;remote 203.0.113.2 2294
+;remote vpntest.selfip.org 2294
 ;redirect-gateway def1
 
-# ==============================================
-# Mostly static details
-client
+# ================================================
+# Mostly static details.
+#
 dev tun
-nobind
+client
 proto udp
-resolv-retry infinite
-cipher AES-256-CBC
+tls-client
 key-direction 1
 remote-cert-tls server
+nobind
+resolv-retry infinite
+cipher AES-256-CBC
 user nobody
 group nogroup
 persist-key
 persist-tun
 
-# ==============================================
-# Logging - adjust for testing or debugging
+# ================================================
+# Logging - adjust for testing or debugging.
 status openvpn-status-client.log
 log openvpn-client.log
 verb 3

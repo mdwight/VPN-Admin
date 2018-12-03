@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# VPN-Admin -- A script base system for managing an OpenVPN system
+# VPN-Admin -- A script base system for managing a small OpenVPN system
 #
 # Copyright (C) 2018 by Matthew Dwight.
 #
@@ -8,118 +8,196 @@
 # LICENSE.GPL for this project for full licensing details.
 #
 
-# View the various certificates in readable format.
-
-# get system variables if needed
+# get system variables
 . ./vars
 
-# make sure there is a Certificate Authority for this system.
-ca_check
+function usage {
+    printf "
+Usage: $0 {command} [name]
 
-function view_issued_certificate {
-    if [ ${1:(-4)} == ".crt" ] ; 
-        then
-            fn=$1
-        else
-            fn="$1.crt"
+Configuration System Commands
+             ca - View the Certificate Authority
+            crl - View the certificate revocation list
+          certs - View a list of certificates
+    cert {name} - View a specific certificate 
+        configs - View a list of configuration files
+  config {name} - View a specific configuration file
+      templates - View a list of templates
+template {name} - View a specific template
+   
+Running System Commands
+      status - View the current status of OpenVPN
+         log - View the main log file for OpenVPN
+     statlog - View the status log file for OpenVPN
+      syslog - View the syslog file for OpenVPN
+        port - View OpenVPN listening port
+
+"
+}
+
+function ca {
+    ca_check
+    openssl x509 -in ./easyrsa3/pki/ca.crt -text
+    exit 0
+}
+
+function crl {
+    ca_check
+    if [ -f $SETUP_DIR/easyrsa3/pki/crl.pem ] ; then
+        openssl crl -in ./easyrsa3/pki/crl.pem -noout -text
+    else
+        printf "The certificate revocation list has not been created yet.\n"
+        printf "Run ./create-crl to generate list.\n"
+    fi    
+    exit 0
+}
+
+function cert {
+    ca_check
+    if [ "" == "$1" ] ; then
+        printf "Current Certificates:\n---------------------\n"
+        if [ -d "$SETUP_DIR/easyrsa3/pki/issued" ] ; then
+            if [ "$(ls -A $SETUP_DIR/easyrsa3/pki/issued)" ]; then
+                find $SETUP_DIR/easyrsa3/pki/issued/*.crt  -printf "%f\n"
+            fi       
+        fi
+    else
+        if [ ${1:(-4)} == ".crt" ]
+            then
+                fn=$1
+            else
+                fn="$1.crt"
+        fi
+        openssl x509 -in ./easyrsa3/pki/issued/$fn -text     
     fi
-    openssl x509 -in ./easyrsa3/pki/issued/$fn -text 
     return 0
 }
 
-function view_configuration {
-    if [ ${1:(-5)} == ".conf" ] ; 
-        then
-            fn=$1
-        else
-            fn="$1.conf"
-    fi
-    echo "File is $fn"
-    if [ -f $SETUP_DIR/servers/$fn ] ; then
-        cat $SETUP_DIR/servers/$fn
-    fi
-    
-    if [ -f $SETUP_DIR/clients/$fn ] ; then
-        cat $SETUP_DIR/clients/$fn 
-    fi
-
+function config {
+    if [ "" == "$1" ]; then
+        printf "Current configuration files:\n----------------------------\n"
+        if [ -d "$SETUP_DIR/configs" ] ; then
+            count=`ls -1 $SETUP_DIR/configs/*.conf 2>/dev/null | wc -l`
+            if [ $count != 0 ] ; then
+                find $SETUP_DIR/configs/*.conf  -printf "%f\n"
+            else
+                printf "No config files found.\n"
+            fi       
+        fi
+    else
+        if [ ${1:(-5)} == ".conf" ] ; 
+            then
+                fn=$1
+            else
+                fn="$1.conf"
+        fi
+        if [ -f $SETUP_DIR/configs/$fn ] ; then
+            cat $SETUP_DIR/configs/$fn
+        fi
+    fi    
     return 0
 }
 
-# STEP 1 - check if the right number of parameters were supplied.
-if  [ "$1" != "ca" ] && [ "$1" != "cert" ] && [ "$1" != "conf" ] && [ "$1" != "crl" ]  ;
-    then
-        printf "
-Usage: $0 ca|crt|crl
-          ca - View the Certificate Authority
-         crl - View the certificate revokation list
-        cert - View a list of certificates issued
-   cert name - View a specific certificate
-        conf - View a list of configuration files
-   conf name - View a specific certificate\n"
-        exit 1
-fi
-
-# VIEW CA - View the Certificate Authority
-if [ "$1" == "ca" ] ; 
-    then
-        openssl x509 -in ./easyrsa3/pki/ca.crt -text
-        exit 0
-fi
-
-# VIEW CRL - View the Certificate Authority
-if [ "$1" == "crl" ] ; 
-    then
-        if [ -f $SETUP_DIR/easyrsa3/pki/crl.pem ] ; then
-            openssl crl -in ./easyrsa3/pki/crl.pem -noout -text
-        else
-            printf "
-The certificate revokation list has not been created yet.
-Run ./create-crl to generate list.\n"
-        fi    
-        exit 0
-fi
-
-# VIEW CERT - View the Certificate
-if [ "$1" == "cert" ] ; then
-    if [ "$2" == "" ] ; then
-        printf "
-Current certificate files:
---------------------------\n"
-        cd ./easyrsa3/pki/issued
-        if [ "$(ls -A $SETUP_DIR/easyrsa3/pki/issued)" ]; then
-            find $SETUP_DIR/easyrsa3/pki/issued/*  -printf "%f\n"
-        fi       
-        cd $SETUP_DIR
-        exit 0
-    else
-        view_issued_certificate $2
-        exit 
-    fi
-fi
-
-# VIEW CONF - View configuration files.
-if [ "$1" == "conf" ] ; then
-    if [ "$2" == "" ] ; then
-        printf "
-Current configuration files:
-----------------------------\n"
-        if [ -d "$SETUP_DIR/servers" ] ; then
-            cd $SETUP_DIR/servers
-            if [ "$(ls -A $SETUP_DIR/servers)" ]; then
-                find $SETUP_DIR/servers/*.conf  -printf "%f\n"
+function template {
+    if [ "" == "$1" ]; then
+        printf "Current template files:\n-----------------------\n"
+        if [ -d "$SETUP_DIR/templates" ] ; then
+            count=`ls -1 $SETUP_DIR/templates/*.template 2>/dev/null | wc -l`
+            if [ $count != 0 ]; then
+                find $SETUP_DIR/templates/*.template  -printf "%f\n"
+            else
+                printf "No templates files found\n"
             fi       
-        fi    
-        if [ -d "$SETUP_DIR/clients" ] ; then
-            cd $SETUP_DIR/clients
-            if [ "$(ls -A $SETUP_DIR/clients)" ]; then
-                find $SETUP_DIR/clients/*.conf  -printf "%f\n"
-            fi       
-        fi    
-        cd $SETUP_DIR
-        exit 0
+        fi
     else
-        view_configuration $2
-        exit 
-    fi
-fi
+        if [ ${1:(-9)} == ".template" ] ; 
+            then
+                fn=$1
+            else
+                fn="$1.template"
+        fi
+        if [ -f $SETUP_DIR/templates/$fn ] ; then
+            cat $SETUP_DIR/templates/$fn
+        fi
+    fi    
+    return 0
+}
+
+function status {
+    printf "\nCurrent Status of OpenVPN is   : "
+    systemctl is-active openvpn.service
+    printf "Starting of OpenVPN at boot is : "
+    systemctl is-enabled openvpn.service
+    exit 0
+}
+
+function log {
+    sudo_check
+    sudo cat /etc/openvpn/openvpn-server.log
+    exit 0
+}
+
+function statlog {
+    sudo_check
+    sudo cat /etc/openvpn/openvpn-status-server.log
+    exit 0
+}
+
+function syslog {
+    sudo_check
+    sudo cat /var/log/syslog | grep openvpn
+    exit 0
+}
+
+function  port {
+    sudo_check
+    sudo sudo lsof -i 4 | grep openvpn
+    exit 0
+}
+
+# Call the requested function.
+case "$1" in 
+    ca)
+        ca
+        ;;
+    crl)
+        crl
+        ;;
+    cert)
+        cert $2
+        ;;
+    certs)
+        cert $2
+        ;;
+    config)
+        config $2
+        ;;
+    configs)
+        config $2
+        ;;
+    templates)
+        template $2
+        ;;
+    template)
+        template $2
+        ;;
+    status)
+        status
+        ;;
+    log)
+        log
+        ;;
+    statlog)
+        statlog
+        ;;
+    syslog)
+        syslog
+        ;;
+    port)
+        port
+        ;;
+    *)
+        usage
+        ;;
+esac
+exit 1 
