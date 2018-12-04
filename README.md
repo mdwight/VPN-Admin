@@ -36,11 +36,11 @@ The above script is used to manage the OpenVPN configuration files for both the 
 
 The above script is used to manage the OpenVPN service running locally on the Pi.  It is responsible for copying over configuration files and a starting and stopping the OpenVPN system.  This command will NOT make any modification within the VPN-Admin system.
 
-    ./view {sub-commands} 
+    ./show {sub-commands} 
     
 The above command is used to view the various log files and configuration files so you don't have to hunt around to find them.
    
 License
 -------
 
-This project is licensed under the GNU GPL v3 License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU GPL v3 License - see the [LICENSE.md](LICENSE.md) file for details.
