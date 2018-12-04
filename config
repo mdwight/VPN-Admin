@@ -1,12 +1,10 @@
 #!/bin/bash
-# 
-
 # VPN-Admin -- A script base system for managing a small OpenVPN system
 #
 # Copyright (C) 2018 by Matthew Dwight.
 #
-# This code released under version 3 of the GNU GPL; see COPYING and the 
-# LICENSE.GPL for this project for full licensing details.
+# This code released under version 3 of the GNU GPL; see COPYING.md and the 
+# LICENSE.md for this project for full licensing details.
 
 # Script to manage the configuration of OpenVPN with Easy-RSA3
 

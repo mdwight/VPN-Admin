@@ -3,8 +3,8 @@
 #
 # Copyright (C) 2018 by Matthew Dwight.
 #
-# This code released under version 3 of the GNU GPL; see COPYING and the
-# LICENSE.GPL for this project for full licensing details.
+# This code released under version 3 of the GNU GPL; see COPYING.md and the
+# LICENSE.md for this project for full licensing details.
 
 # Shared functions used by the main script. Not to be run directly.
 

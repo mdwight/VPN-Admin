@@ -1,22 +1,20 @@
 #!/bin/bash
-
 # VPN-Admin -- A script base system for managing a small OpenVPN system
 #
 # Copyright (C) 2018 by Matthew Dwight.
 #
-# This code released under version 3 of the GNU GPL; see COPYING and the
-# LICENSE.GPL for this project for full licensing details.
-#
+# This code released under version 3 of the GNU GPL; see COPYING.md and the
+# LICENSE.md for this project for full licensing details.
 
 # Override some of the defaults set in the main scripts.
 
 # Default to nopass for CA and Certificates. 
-#NOPASS="nopass"
+NOPASS="nopass"
 
 # Set expiry dates on Certificates 
-#export EASYRSA_CRL_DAYS=7305      # 20 years
-#export EASYRSA_CA_EXPIRE=7305     # 20 years
-#export EASYRSA_CERT_EXPIRE=7305   # 20 years
+export EASYRSA_CRL_DAYS=7305      # 20 years
+export EASYRSA_CA_EXPIRE=7305     # 20 years
+export EASYRSA_CERT_EXPIRE=7305   # 20 years
 
 # Directory of the OpenVPN system.
-#SYSTEM_DIR="/etc/openvpn"
+SYSTEM_DIR="/etc/openvpn"
