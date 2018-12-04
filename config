@@ -17,8 +17,8 @@ export EASYRSA_CA_EXPIRE=7305     # 20 years
 export EASYRSA_CERT_EXPIRE=7305   # 20 years
 
 # If user want to modify some of the above defaults.
-if [ -f ./vars ] ; then
-    . ./vars
+if [ -f ./vars.sh ] ; then
+    . ./vars.sh
 fi
 
 # Root directory for configuration.

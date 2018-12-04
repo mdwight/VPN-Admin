@@ -12,8 +12,8 @@
 SYSTEM_DIR="/etc/openvpn"
 
 # If user want to modify some of the defaults.
-if [ -f ./vars ] ; then
-    . ./vars
+if [ -f ./vars.sh ] ; then
+    . ./vars.sh
 fi
 
 # Root directory for configuration.
