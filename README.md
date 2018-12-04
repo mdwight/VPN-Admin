@@ -16,7 +16,10 @@ The following command will install or update the VPN-Admin scripts into the curr
     bash <(curl -L https://raw.githubusercontent.com/mdwight/VPN-Admin/v1.0/VPN-Admin-install.sh)
 
 
-Full details on how to setup and manage an OpenVPN system on the Raspberry can be found at [https://www.mdwight.com/OpenVPN](https://www.mdwight.com/OpenVPN).
+Documentation
+-------------
+    
+Full documentation on how to setup and manage an OpenVPN system using VPN-Admin on the Raspberry can be found at [https://www.mdwight.com/OpenVPN](https://www.mdwight.com/OpenVPN).
 
 Prerequisites
 -------------
