@@ -1,7 +1,7 @@
-VPN-Admin - Small OpenVPN Management
-------------------------------------
+VPN-Admin - OpenVPN Configuration Management Scripts
+----------------------------------------------------
 
-A script base system for managing a small OpenVPN system
+A script based system for managing a small OpenVPN system configuration.
 
 Copyright (C) 2018 by Matthew Dwight
 
