@@ -34,7 +34,7 @@ fi
 # STEP 2 - Install/Upgrade OpenVPN/easy-rsa
 # Check to see that we are in the right directory and that VPN-Admin has been installed.
 printf "Staring install/update of OpenVPN/easy-rsa.\n"
-if [ ! -d ./templates ] || [ ! -d ./ccd ] ; then
+if [ ! -d ./parameters ] || [ ! -d ./ccd ] ; then
     printf "Error - VPN-Admin does appear to have been installed correctly.\n"
     exit 1
 fi
