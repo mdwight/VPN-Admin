@@ -33,8 +33,8 @@ Configuration System Commands
     cert {name} - View a specific certificate 
         configs - View a list of configuration files
   config {name} - View a specific configuration file
-      templates - View a list of templates
-template {name} - View a specific template
+       parfiles - View a list of parameters files
+ parfile {name} - View a specific parameters file
    
 Running System Commands
       status - View the current status of OpenVPN
@@ -112,26 +112,26 @@ function config {
     return 0
 }
 
-function template {
+function parfile {
     if [ "" == "$1" ]; then
-        printf "Current template files:\n-----------------------\n"
-        if [ -d "$SETUP_DIR/templates" ] ; then
-            count=`ls -1 $SETUP_DIR/templates/*.template 2>/dev/null | wc -l`
+        printf "Current parameter files:\n-----------------------\n"
+        if [ -d "$SETUP_DIR/parameters" ] ; then
+            count=`ls -1 $SETUP_DIR/parameters/*.par 2>/dev/null | wc -l`
             if [ $count != 0 ]; then
-                find $SETUP_DIR/templates/*.template  -printf "%f\n"
+                find $SETUP_DIR/parameters/*.par  -printf "%f\n"
             else
-                printf "No templates files found\n"
+                printf "No parameters files found\n"
             fi       
         fi
     else
-        if [ ${1:(-9)} == ".template" ] ; 
+        if [ ${1:(-9)} == ".par" ] ; 
             then
                 fn=$1
             else
-                fn="$1.template"
+                fn="$1.par"
         fi
-        if [ -f $SETUP_DIR/templates/$fn ] ; then
-            cat $SETUP_DIR/templates/$fn
+        if [ -f $SETUP_DIR/parameters/$fn ] ; then
+            cat $SETUP_DIR/parameters/$fn
         fi
     fi    
     return 0
@@ -190,11 +190,11 @@ case "$1" in
     configs)
         config $2
         ;;
-    templates)
-        template $2
+    parfiles)
+        parfile $2
         ;;
-    template)
-        template $2
+    parafile)
+        parfile $2
         ;;
     status)
         status

@@ -36,11 +36,11 @@ case "$1" in
 Usage: $0 $1 [ASKPASS] [DH]
 
 This script will delete all the configuration, key and certificate files.  The 
-template files and the client configuration files will not be touched.  A new 
+parameter files and the client configuration files will not be touched.  A new 
 CA will then be created along with the tls-auth pre-shared key.  The existing
 Diffie-Hellman parameters file will be retained, if it exists, so it does not 
-need to be regenerated.  The Diffie-Hellman parameters file takes a can take a
-very long time to generate and only needs to be done once.
+need to be regenerated.  The Diffie-Hellman parameters file can take a very
+long time to generate and only needs to be done once.
 
 Optional Parameters:
 --------------------
@@ -53,7 +53,7 @@ DH - If you want to generate a new Diffie-Hellman parameters file.
 # HELP for create
     create)
     printf "
-Usage: $0 $1 certificate_name template [ASKPASS]
+Usage: $0 $1 certificate_name parfile [ASKPASS]
 
 This script will add or regenerate the configuration file for a client or 
 server.  If the certificate exist it will be reused, otherwise a new one will
@@ -62,7 +62,7 @@ be generated.  The configuration will have the same name as the certificate.
 Required Parameters:
 --------------------
 certificate_name - name get give or used by certificate.
-template - name of template to use.
+parfile - name of parameter file to use.
 
 Optional Parameters:
 --------------------
@@ -74,11 +74,11 @@ Current configuration files:
             find $SETUP_DIR/easyrsa3/pki/issued/*  -printf "%f\n"
         fi       
         printf "
-List of template files:
------------------------\n"
-        count=`ls -1 $SETUP_DIR/templates/*.template 2>/dev/null | wc -l`
+List of parameter files:
+------------------------\n"
+        count=`ls -1 $SETUP_DIR/parameters/*.par 2>/dev/null | wc -l`
         if [ 0 -lt $count ] ; then
-            find $SETUP_DIR/templates/*.template  -printf "%f\n"
+            find $SETUP_DIR/parameters/*.par  -printf "%f\n"
         fi
         printf "\n"
 
@@ -293,24 +293,24 @@ function create {
     fi
 
     printf "\nStarting configuration file generation for \'$1\' =================================\n"
-    # STEP 3 - check to see if template file exists
-    TEMPLATE="${2//.template}"
-    if [ ! -f ./templates/$TEMPLATE.template ];
+    # STEP 3 - check to see if parameter file exists
+    PARFILE="${2//.par}"
+    if [ ! -f ./parameters/$PARFILE.par ];
         then
-            printf "Error TMPL: \'$TEMPLATE\' does not exist.\n"
+            printf "Error TMPL: \'$PARFILE\' does not exist.\n"
             exit 1
     fi
-    printf "Template \'$TEMPLATE\' found.\n"
+    printf "Template \'$PARFILE\' found.\n"
 
-    # STEP 4 - find out weather it is a client or server template.
-    if  grep -q 'remote-cert-tls client' './templates/'$TEMPLATE'.template' ; then
-        printf "Using Server template \'$TEMPLATE\'.\n"
+    # STEP 4 - find out weather it is a client or server parameter file.
+    if  grep -q 'remote-cert-tls client' './parameters/'$PARFILE'.par' ; then
+        printf "Using Server parameter file \'$PARFILE\'.\n"
         TMPLTYPE="Server"
-    elif grep -q 'remote-cert-tls server' './templates/'$TEMPLATE'.template' ; then
-        printf "Using Client template \'$TEMPLATE\'.\n"
+    elif grep -q 'remote-cert-tls server' './parameters/'$PARFILE'.par' ; then
+        printf "Using Client parameter file\'$PARFILE\'.\n"
         TMPLTYPE="Client"
         else
-        printf "Error: \'$TEMPLATE\' is an unknown type of template.\n"
+        printf "Error: \'$PARFILE\' is an unknown type of parameter file.\n"
         exit 1
     fi
 
@@ -356,7 +356,7 @@ function create {
             ./easyrsa build-client-full $CERT $NOPASS
         else
             # we should never get here.
-            printf "Error: Script Error - unknown template type $TMPLTYPE defined.\n"
+            printf "Error: Script Error - unknown parameter file type $TMPLTYPE defined.\n"
             exit 1
         fi
         cd ..
@@ -372,7 +372,7 @@ function create {
         exit 1
     fi
 
-    # STEP 10 - check to see if the certificate type matches the template type. 
+    # STEP 10 - check to see if the certificate type matches the parameter file type. 
     if [ "Server" == "$TMPLTYPE" ] ; then
         if ! grep -q 'TLS Web Server Authentication' './easyrsa3/pki/issued/'$CERT'.crt'  ; then
             echo "Return: $?\n"
@@ -394,7 +394,7 @@ function create {
         fi
     else
         # we should never get here.
-        printf "Error: Script Error - unknown template type $TMPLTYPE defined.\n"
+        printf "Error: Script Error - unknown parameter file type $TMPLTYPE defined.\n"
         exit 1
     fi
     printf "Template and Certificate Type Match.\n"
@@ -423,8 +423,8 @@ function create {
 
     # STEP 14 - We seem to have everything we need to create configuration file.
     #
-    # copy over template
-    cp ./templates/$TEMPLATE.template ./configs/$CERT.conf
+    # copy over parameter file
+    cp ./parameters/$PARFILE.par ./configs/$CERT.conf
     #
     # Make sure we start on a new line for keys.
     printf '\n#\n' >> ./configs/$CERT.conf
