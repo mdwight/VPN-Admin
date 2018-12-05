@@ -194,19 +194,22 @@ function initialize {
         DH=no
     fi
 
-    # STEP 1 - Verify the system is to be initialized.
-    printf "Initializing the system will remove all keys and certificates.\n"
-    verify "Do you want to initialize the current system (Yes/No) > "
-    if [ 0 != $? ] ; then 
-        exit 1 
-    fi
+    # STEP 1 - Verify the system is to be initialized if already initialized.
+    if [ -f $SETUP_DIR/easyrsa3/pki/ca.crt ] ; then  # 
+        printf "It appears the system has already been initialized.  Initializing\n"
+        printf "the system will remove all current keys and certificates. Are you\n"
+        verify "Sure you want to initialize the system (Yes/No) > "
+        if [ 0 != $? ] ; then 
+            exit 1 
+        fi
 
-    verify "                                Are you sure (Yes/No) > "
-    if [ 0 != $? ] ; then 
-        exit 1 
+        verify "                  Are you really sure? (Yes/No) > "
+        if [ 0 != $? ] ; then 
+            exit 1 
+        fi
+        printf "Starting Initialization.\n"
     fi
-    printf "Starting Initialization.\n"
-
+    
     # STEP 2 - Backup ./easyrsa3/pki/dh.pem if it exists.
     if [ -f ./easyrsa3/pki/dh.pem ] ; then 
         if [ -f ./dh.pem ] ; then
