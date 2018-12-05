@@ -25,7 +25,7 @@ ifconfig-pool 10.7.6.101 10.7.6.250
 # Mostly static details.
 #
 dev tun
-proto udp
+proto udp4
 mode server
 tls-server
 key-direction 0

@@ -20,7 +20,7 @@ remote 10.1.1.3 1194
 #
 dev tun
 client
-proto udp
+proto udp4
 tls-client
 key-direction 1
 remote-cert-tls server
