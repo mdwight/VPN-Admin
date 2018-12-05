@@ -10,7 +10,7 @@
 # ================================================
 # Variable depending on topology.
 #
-port 2294
+port 1194
 ifconfig 10.7.6.1 255.255.255.0
 ifconfig-pool 10.7.6.101 10.7.6.250
 #
