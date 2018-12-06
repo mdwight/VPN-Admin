@@ -157,7 +157,7 @@ function load {
 
     # STEP 5 - Stop the OpenVPN System
     stop
-
+       
     # STEP 6 - remove current running configuration.
     printf "Deleting configuration files from $SYSTEM_DIR/\n"
     sudo rm -f $SYSTEM_DIR/*.conf
@@ -175,14 +175,10 @@ function load {
     sudo cp ./ccd/*  $SYSTEM_DIR/ccd/
     printf "Copying over Certificate Revocation List file $SETUP_DIR/crl.pem\n"
     sudo cp ./easyrsa3/pki/crl.pem $SYSTEM_DIR/
-
+        
     # STEP 8 - Start the OpenVPN System
     start
-
-    # STEP 9 - See if it is running
-    status
 }
-
 
 function restart {
     # STEP 1 - Make sure user has sudo access
@@ -197,32 +193,28 @@ function restart {
 
     # STEP 4 - Start the OpenVPN System
     start
-
-    # STEP 5 - See if it is running
-    status
 }
 
 function start {
     # STEP 1 - Make sure user has sudo access
     sudo_check
 
-    # STEP 2 - Start the OpenVPN System
-    if ( ! sudo systemctl is-active openvpn.service > /dev/null ) ; then
+    # STEP 2 - Enable OpenVPN server to start at boot.
+    if ( ! sudo systemctl is-enabled openvpn > /dev/null ) ; then
+        printf "Enabling OpenVPN to start at boot.\n"
+        sudo systemctl enable openvpn
+    else
+        printf "OpenVPN is already enabled to start at boot.\n"
+    fi
+
+    # STEP 3 - Start the OpenVPN System
+    if ( ! sudo systemctl is-active openvpn > /dev/null ) ; then
         printf "Copying over CRL file from $SETUP_DIR\n"
         sudo cp ./easyrsa3/pki/crl.pem $SYSTEM_DIR/
         printf "Starting the OpenVPN service\n"
-        sudo systemctl start openvpn.service
-        sleep 3  # make sure it is started
+        sudo systemctl start openvpn
     else
         printf "OpenVPN is already running.\n"
-    fi
-
-    # STEP 3 - Enable OpenVPN server to start at boot.
-    if ( ! sudo systemctl is-enabled openvpn.service > /dev/null ) ; then
-        printf "Enabling OpenVPN to start at boot.\n"
-        sudo systemctl enable openvpn.service
-    else
-        printf "OpenVPN is already enabled to start at boot.\n"
     fi
 
     # STEP 4 - Show the current status
@@ -234,18 +226,18 @@ function stop {
     sudo_check
 
     # STEP 2 - Stop the OpenVPN System
-    if ( sudo systemctl is-active openvpn.service > /dev/null ) ; then
+    if ( sudo systemctl is-active openvpn > /dev/null ) ; then
         printf "Stopping the OpenVPN system\n"
-        sudo systemctl stop openvpn.service
+        sudo systemctl stop openvpn
         sleep 3  # make sure it is stopped
     else
         printf "OpenVPN is already stopped.\n"
     fi
 
     # STEP 3 - Disable OpenVPN server from starting.
-    if ( sudo systemctl is-enabled openvpn.service > /dev/null ) ; then
+    if ( sudo systemctl is-enabled openvpn > /dev/null ) ; then
         printf "Disabling OpenVPN from starting at boot.\n"
-        sudo systemctl disable openvpn.service
+        sudo systemctl disable openvpn
     else
         printf "OpenVPN is already disabled to start at boot.\n"
     fi
@@ -257,10 +249,9 @@ function stop {
 function status {
     # View the current status of OpenVPN
     printf "Current Status of OpenVPN is   : "
-    sudo systemctl is-active openvpn.service
+    sudo systemctl is-active openvpn
     printf "Starting of OpenVPN at boot is : "
-    sudo systemctl is-enabled openvpn.service
-    exit 0
+    sudo systemctl is-enabled openvpn
 }
 
 # Call the requested function.
