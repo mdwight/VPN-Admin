@@ -156,13 +156,7 @@ function load {
     sudo_check
 
     # STEP 5 - Stop the OpenVPN System
-    if ( sudo systemctl is-active openvpn.service > /dev/null ) ; then
-        printf "Stopping the OpenVPN system\n"
-        sudo systemctl stop openvpn.service
-        sleep 3  # make sure it is stopped
-    else
-        printf "OpenVPN is not currently running.\n"
-    fi
+    stop
 
     # STEP 6 - remove current running configuration.
     printf "Deleting configuration files from $SYSTEM_DIR/\n"
@@ -195,27 +189,14 @@ function restart {
     sudo_check
 
     # STEP 2 - Stop the OpenVPN System
-    if ( sudo systemctl is-active openvpn.service > /dev/null ) ; then
-        printf "Stopping the OpenVPN system\n"
-        sudo systemctl stop openvpn.service
-        sleep 3  # make sure it is stopped
-    else
-        printf "OpenVPN is not currently running.\n"
-        exit 1
-    fi
+    stop
 
     # STEP 3 - Copy over crl file.
     printf "Copying over CRL file from $SETUP_DIR\n"
     sudo cp ./easyrsa3/pki/crl.pem $SYSTEM_DIR/
 
     # STEP 4 - Start the OpenVPN System
-    if ( ! sudo systemctl is-active openvpn.service > /dev/null ) ; then
-        printf "Starting the OpenVPN service\n"
-        sudo systemctl start openvpn.service
-        sleep 3  # make sure it is started
-    else
-        printf "OpenVPN is currently running.\n"
-    fi
+    start
 
     # STEP 5 - See if it is running
     status
