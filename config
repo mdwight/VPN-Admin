@@ -260,18 +260,10 @@ function initialize {
         printf "Generating dh.pem file.\n"
         ./easyrsa gen-dh
     fi
+    cd $SETUP_DIR
 
     # STEP 10 - Generate a Certificate Revocation List
-    printf "Generating Certificate Revocation List.\n"
-    echo "unique_subject = yes" > ./pki/index.txt.attr  # this is a bug fix
-    if ./easyrsa gen-crl ; then 
-        printf "Generation of CRL file was succesfull.\n"
-    else
-        printf "WARNING: Generation of Certificate Revocation List has FAILED.\n"
-        printf "Run ./config crl to generate Certificate Revocation List.\n"
-    fi
-
-    cd $SETUP_DIR
+    crl
 
     printf "System is initialized.\n\n"
 }
@@ -586,7 +578,7 @@ function crl {
 
     # apply bug fix
     if [ ! -f ./pki/index.txt.attr ]; then
-        printf "Applying bug fix\n"
+        printf "Note: Creating file ./easyrsa3/pki/index.txt.attr\n"
         echo "unique_subject = yes" > ./pki/index.txt.attr
     fi
 
