@@ -165,7 +165,7 @@ function syslog {
 
 function  port {
     sudo_check
-    sudo netstat -plnu | grep openvpn
+    sudo sudo netstat -plnu | grep openvpn
     exit 0
 
 }
