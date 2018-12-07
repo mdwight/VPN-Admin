@@ -6,7 +6,7 @@
 # This code released under version 3 of the GNU GPL; see COPYING.md and the
 # LICENSE.md for this project for full licensing details.
 
-# Script to install or update VPN-Admin along with Open-VPN/easyrsa 
+# Script to install or update VPN-Admin along with Open-VPN/easyrsa
 #
 
 # STEP 1 - Install/Update VPN-Admin into the current working directory.
@@ -19,9 +19,9 @@ if [ -d ./VPN-Admin-1.0 ] ; then
     rm -fr ./VPN-Admin-1.0
 fi
 
-# Get easyrsa and copy to proper directory. 
+# Get easyrsa and copy to proper directory.
 if wget https://github.com/mdwight/VPN-Admin/archive/v1.0.zip ; then
-    unzip v1.0.zip 
+    unzip v1.0.zip
     cp -r ./VPN-Admin-1.0/* .
     rm -fr ./VPN-Admin-1.0
     rm v1.0.zip

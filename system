@@ -24,7 +24,7 @@ SETUP_DIR=$PWD
 
 function usage {
 
-    case "$1" in 
+    case "$1" in
 
 # HELP for load command
     load)
@@ -32,60 +32,60 @@ function usage {
 Usage: $0 $1 configuration_name
 
 This command will shutdown the running OpenVPN service and remove the running
-configuration files.  If no configuration is supplied it will update the 
+configuration files.  If no configuration is supplied it will update the
 current configuration file.  Also replaced are the CCD (Client Configuration
 Files) and CRL (Certificate Revocation List) file.  Use this when making
-configuration changes.  
+configuration changes.
 
 "
     ;;
-    
+
 # HELP for restart command
     restart)
         printf "
-Usage: $0 $1 
+Usage: $0 $1
 
 This command will shutdown the running OpenVPN service and update the the CRL
 file before starting the OpenVPN system again.  The configuration of the system
-remains unchanged. This should be done when a certificate is revoked. 
+remains unchanged. This should be done when a certificate is revoked.
 
 "
     ;;
-    
+
 # HELP for start command
     start)
         printf "
-Usage: $0 $1 
+Usage: $0 $1
 
 This command will start the OpenVPN service if it is not running. If the service is
-not running it will also copy over the CRL file starting the OpenVPN service. 
+not running it will also copy over the CRL file starting the OpenVPN service.
 It will also re-enable the OpenVPN service to start when the system is booted.
 
 "
     ;;
-    
+
 # HELP for stop command
     stop)
         printf "
-Usage: $0 $1 
+Usage: $0 $1
 
 This command will shutdown the running OpenVPN service and disable it from
 starting when the system boots.
 
 "
     ;;
-    
+
 # HELP for the status command
     status)
         printf "
-Usage: $0 $1 
+Usage: $0 $1
 
 This command will display the current status of the OpenVPN service and also
 show if it is enabled to start when the system starts up.
 
 "
     ;;
-    
+
 # HELP for help
     help)
         printf "
@@ -102,7 +102,7 @@ restart - load just the CRL and restart.
 
 "
     ;;
-    
+
 # HELP main help
     *)
         if [ "" != "$1" ] ; then
@@ -120,22 +120,22 @@ restart - load just the CRL and restart.
 
 "
     ;;
-esac    
+esac
 }
- 
+
 function load {
     # STEP 1 - Drop extension to certificate if supplied
     CONFIG="${1//.conf}"
-    
+
     # STEP 2 - If config name not supplied get current running config.
-    # will only find the first occurrence. 
+    # will only find the first occurrence.
     if [ "" == "$CONFIG" ] && [ -f $SYSTEM_DIR/*.conf ] ; then
         for entry in `(cd /etc/openvpn && ls -1 *.conf)` ; do
             CONFIG="${entry//.conf}"
             printf "Running config $CONFIG.conf found. Will try to update.\n"
         done
     fi
-    
+
     # STEP 3 - See if config file exist
     if [ ! -f ./configs/$CONFIG.conf ] ; then
         if [ "" = "$CONFIG" ] ; then
@@ -148,7 +148,7 @@ function load {
             if [ "$(ls -A $SETUP_DIR/configs/*.conf)" ]; then
                 find $SETUP_DIR/configs/*.conf  -printf "%f\n"
             fi
-        fi       
+        fi
         exit 1
     fi
 
@@ -157,7 +157,7 @@ function load {
 
     # STEP 5 - Stop the OpenVPN System
     stop
-       
+
     # STEP 6 - remove current running configuration.
     printf "Deleting configuration files from $SYSTEM_DIR/\n"
     sudo rm -f $SYSTEM_DIR/*.conf
@@ -170,12 +170,12 @@ function load {
     sudo cp ./configs/$CONFIG.conf $SYSTEM_DIR/
     if [ ! -d "$SYSTEM_DIR/ccd/" ] ; then
         sudo mkdir "$SYSTEM_DIR/ccd/"
-    fi    
+    fi
     printf "Copying over Client Configuration Files from $SETUP_DIR/ccd/\n"
     sudo cp ./ccd/*  $SYSTEM_DIR/ccd/
     printf "Copying over Certificate Revocation List file $SETUP_DIR/crl.pem\n"
     sudo cp ./easyrsa3/pki/crl.pem $SYSTEM_DIR/
-        
+
     # STEP 8 - Start the OpenVPN System
     start
 }
@@ -255,7 +255,7 @@ function status {
 }
 
 # Call the requested function.
-case "$1" in 
+case "$1" in
     load)
         load $2
         ;;
@@ -275,9 +275,9 @@ case "$1" in
         usage $2 $3
         ;;
     *)
-        usage $1 $2 
+        usage $1 $2
         ;;
-    
+
 esac
-exit 1 
+exit 1
 

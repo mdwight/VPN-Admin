@@ -10,11 +10,11 @@
 
 
 function parameter_type {
-# checks config or parameter files to see if the parameter are for a client or server. 
+# checks config or parameter files to see if the parameter are for a client or server.
 # returns 1 for server, 2 for client, 3 for unknown and 4 file not found.
 # take a parameter of a file name to check.
 
-    if [ ! -f $1 ] ; then   # file not found 
+    if [ ! -f $1 ] ; then   # file not found
         return 4
     fi
 
@@ -28,11 +28,11 @@ function parameter_type {
 }
 
 function certificate_type {
-# checks certificate file to see if the parameter are for a client or server. 
+# checks certificate file to see if the parameter are for a client or server.
 # returns 1 for server, 2 for client, 3 for unknown and 4 file not found.
 # take a parameter of a file name to check.
 
-    if [ ! -f $1 ] ; then   # file not found 
+    if [ ! -f $1 ] ; then   # file not found
         return 4
     fi
     if grep -q 'TLS Web Server Authentication' $1 ; then   # found only in server certificate only

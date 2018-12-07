@@ -30,12 +30,12 @@ Configuration System Commands
              ca - View the Certificate Authority
             crl - View the certificate revocation list
           certs - View a list of certificates
-    cert {name} - View a specific certificate 
+    cert {name} - View a specific certificate
         configs - View a list of configuration files
   config {name} - View a specific configuration file
        parfiles - View a list of parameters files
  parfile {name} - View a specific parameters file
-   
+
 Running System Commands
       status - View the current status of OpenVPN
          log - View the main log file for OpenVPN
@@ -61,7 +61,7 @@ function crl {
     else
         printf "The certificate revocation list has not been created yet.\n"
         printf "Run ./create-crl to generate list.\n"
-    fi    
+    fi
     exit 0
 }
 
@@ -73,7 +73,7 @@ function cert {
         if [ -d "$SETUP_DIR/easyrsa3/pki/issued" ] ; then
             if [ "$(ls -A $SETUP_DIR/easyrsa3/pki/issued)" ]; then
                 find $SETUP_DIR/easyrsa3/pki/issued/*.crt  -printf "%f\n"
-            fi       
+            fi
         fi
     else
         if [ ${1:(-4)} == ".crt" ]
@@ -82,7 +82,7 @@ function cert {
             else
                 fn="$1.crt"
         fi
-        openssl x509 -in ./easyrsa3/pki/issued/$fn -text     
+        openssl x509 -in ./easyrsa3/pki/issued/$fn -text
     fi
     return 0
 }
@@ -96,10 +96,10 @@ function config {
                 find $SETUP_DIR/configs/*.conf  -printf "%f\n"
             else
                 printf "No config files found.\n"
-            fi       
+            fi
         fi
     else
-        if [ ${1:(-5)} == ".conf" ] ; 
+        if [ ${1:(-5)} == ".conf" ] ;
             then
                 fn=$1
             else
@@ -108,7 +108,7 @@ function config {
         if [ -f $SETUP_DIR/configs/$fn ] ; then
             cat $SETUP_DIR/configs/$fn
         fi
-    fi    
+    fi
     return 0
 }
 
@@ -121,10 +121,10 @@ function parfile {
                 find $SETUP_DIR/parameters/*.par  -printf "%f\n"
             else
                 printf "No parameters files found\n"
-            fi       
+            fi
         fi
     else
-        if [ ${1:(-9)} == ".par" ] ; 
+        if [ ${1:(-9)} == ".par" ] ;
             then
                 fn=$1
             else
@@ -133,7 +133,7 @@ function parfile {
         if [ -f $SETUP_DIR/parameters/$fn ] ; then
             cat $SETUP_DIR/parameters/$fn
         fi
-    fi    
+    fi
     return 0
 }
 
@@ -171,7 +171,7 @@ function  port {
 }
 
 # Call the requested function.
-case "$1" in 
+case "$1" in
     ca)
         ca
         ;;
@@ -215,4 +215,4 @@ case "$1" in
         usage
         ;;
 esac
-exit 1 
+exit 1

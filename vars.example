@@ -8,10 +8,10 @@
 
 # Override some of the defaults set in the main scripts.
 
-# Default to nopass for CA and Certificates. 
+# Default to nopass for CA and Certificates.
 NOPASS="nopass"
 
-# Set expiry dates on Certificates 
+# Set expiry dates on Certificates
 export EASYRSA_CRL_DAYS=7305      # 20 years
 export EASYRSA_CA_EXPIRE=7305     # 20 years
 export EASYRSA_CERT_EXPIRE=7305   # 20 years
