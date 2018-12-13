@@ -425,6 +425,8 @@ function create {
     # STEP 13 - We seem to have everything we need to create configuration file.
     #
     # copy over parameter file
+    printf "Note: Creating file ./configs/$CERTFILE.conf\n"
+    printf "Note: Adding file ./parameters/$PARFILE.par\n"
     cp ./parameters/$PARFILE.par ./configs/$CERTFILE.conf
     #
     # Make sure we start on a new line for keys.
@@ -432,35 +434,41 @@ function create {
     printf "# !!!!! Do not change anything below this line. !!!!!\n" >> ./configs/$CERTFILE.conf
     #
     # Add diffie-helman for server configs only.
-    if [ "Server" == "$PARMTYPE" ] ; then
+    if [ "Server" == "$PARMFILETYPE" ] ; then
+        printf "Note: Adding file ./eashrsa3/pki/dh.pem\n"
         printf '<dh>\n' >> ./configs/$CERTFILE.conf
         cat ./easyrsa3/pki/dh.pem >> ./configs/$CERTFILE.conf
         printf '</dh>\n#\n' >> ./configs/$CERTFILE.conf
     fi
     #
     # Add tls-authority key
+    printf "Note: Adding file ./eashrsa3/pki/ta.key\n"
     printf '<tls-auth>\n' >> ./configs/$CERTFILE.conf
     cat ./easyrsa3/pki/ta.key >> ./configs/$CERTFILE.conf
     printf '</tls-auth>\n#\n' >> ./configs/$CERTFILE.conf
     #
     # Add certificate authority
+    printf "Note: Adding file ./eashrsa3/pki/ca.crt\n"
     printf '<ca>\n' >> ./configs/$CERTFILE.conf
     cat ./easyrsa3/pki/ca.crt >> ./configs/$CERTFILE.conf
     printf '</ca>\n#\n' >> ./configs/$CERTFILE.conf
     #
     # Add certificate
     printf '<cert>\n' >> ./configs/$CERTFILE.conf
+    printf "Note: Adding file ./eashrsa3/pki/$CERTFILE.crt\n"
     cat ./easyrsa3/pki/issued/$CERTFILE.crt >> ./configs/$CERTFILE.conf
     printf '</cert>\n#\n' >> ./configs/$CERTFILE.conf
     #
     # Add key
     printf '<key>\n' >> ./configs/$CERTFILE.conf
+    printf "Note: Adding file ./eashrsa3/pki/$CERTFILE.key\n"
     cat ./easyrsa3/pki/private/$CERTFILE.key >> ./configs/$CERTFILE.conf
     printf '</key>\n#\n' >> ./configs/$CERTFILE.conf
     #
     printf "OK: Configuration file ./configs/$CERTFILE.conf created.\n"
     #
     # Create a .ovpn configuation file also
+    printf "Note: Generating ./configs/$CERTFILE.ovpn from ./configs/$CERTFILE.conf\n"
     cp ./configs/$CERTFILE.conf ./configs/$CERTFILE.ovpn
     todos ./configs/$CERTFILE.ovpn
     printf "OK: Configuration file ./configs/$CERTFILE.ovpn created.\n"
