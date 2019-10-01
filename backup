@@ -1,0 +1,123 @@
+#!/bin/bash
+# VPN-Admin -- A script base system for managing a small OpenVPN system
+#
+# Copyright (C) 2018 by Matthew Dwight.
+#
+# This code released under version 3 of the GNU GPL; see COPYING.md and the
+# LICENSE.md for this project for full licensing details.
+
+# Script to backup VPN-Admin configuration and system configure files.
+
+# Main directories for setup and system.
+SYSTEM_DIR="/etc/openvpn"
+
+# If user want to modify some of the defaults.
+if [ -f ./vars.sh ] ; then
+    . ./vars.sh
+fi
+
+# Root directory for configuration.
+SETUP_DIR=$PWD
+
+# Bring in shared functions
+. ./shared.sh
+
+function usage {
+
+    case "$1" in
+
+# HELP for config command
+    config)
+        printf "
+Usage: $0 $1 configuration_name|RUNNING
+
+This command will backup all the VPN-Admin files and place them in a zip file. 
+The zip file will be placed in the users home directory.   
+
+"
+    ;;
+
+# HELP for system command
+    system)
+        printf "
+Usage: $0 $1
+
+This command will backup most of the system files that would have been modified
+setting up the OpenVPN server and place them in a zip file .  The zip file will 
+be placed in the users home directory.
+
+"
+    ;;
+
+# HELP for help
+    help)
+        printf "
+Usage: $0 $1 command
+
+Get more detailed help on each command.
+
+ config - backup VPN-Admin files.
+ system - backup system files modified setting up the OpenVPN server.
+   help - help on specific command.
+
+"
+    ;;
+
+# HELP main help
+    *)
+        if [ "" != "$1" ] ; then
+            printf "\nError: Unknown commands \`$1\`.\n"
+        fi
+        printf "
+Usage: $0 {command}
+
+ config - backup VPN-Admin files.
+ system - backup system files modified setting up the OpenVPN server.
+   help - help on specific command.
+
+"
+    ;;
+esac
+}
+
+function config {
+    FILENAME=$(date +vpn-config_'%Y_%m_%d_%H_%M_%S'.zip);
+    zip -r ../$FILENAME *
+    echo $FILENAME
+
+}
+
+function system {
+    # STEP 1 - Make sure user has sudo access
+    sudo_check
+
+    FILENAME=$(date +vpn-system_'%Y_%m_%d_%H_%M_%S'.zip);
+    sudo zip -r ../$FILENAME /etc/openvpn/*  
+    sudo zip -r ../$FILENAME /etc/hostname /etc/hosts 
+    sudo zip -r ../$FILENAME /etc/dhcpcd.conf
+    sudo zip -r ../$FILENAME /etc/ssh/sshd_config
+    sudo zip -r ../$FILENAME /etc/default/ddclient /etc/ddclient.conf 
+    sudo zip -r ../$FILENAME /etc/default/ufw      /etc/ufw/*
+    echo ../$FILENAME
+}
+
+
+
+# Call the requested function.
+case "$1" in
+    config)
+        config $2
+        ;;
+    system)
+        system $2
+        ;;
+    help)
+        usage $2 $3
+        ;;
+    *)
+        usage $1 $2
+        ;;
+
+esac
+exit 1
+
