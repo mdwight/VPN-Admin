@@ -29,13 +29,13 @@ function usage {
 # HELP for load command
     load)
         printf "
-Usage: $0 $1 configuration_name
+Usage: $0 $1 configuration_name|RUNNING
 
 This command will shutdown the running OpenVPN service and remove the running
-configuration files.  If no configuration is supplied it will update the
-current configuration file.  Also replaced are the CCD (Client Configuration
-Files) and CRL (Certificate Revocation List) file.  Use this when making
-configuration changes.
+configuration files.  If RUNNING is supplied as the configuration name it will
+update the active configuration file.  Also replaced are the CCD (Client 
+Configuration Files) and CRL (Certificate Revocation List) file.  Use this when
+making configuration changes.
 
 "
     ;;
@@ -129,7 +129,7 @@ function load {
 
     # STEP 2 - If config name not supplied get current running config.
     # will only find the first occurrence.
-    if [ "" == "$CONFIG" ] && [ -f $SYSTEM_DIR/*.conf ] ; then
+    if [ "RUNNING" == "$CONFIG" ] && [ -f $SYSTEM_DIR/*.conf ] ; then
         for entry in `(cd /etc/openvpn && ls -1 *.conf)` ; do
             CONFIG="${entry//.conf}"
             printf "Running config $CONFIG.conf found. Will try to update.\n"
@@ -139,7 +139,7 @@ function load {
     # STEP 3 - See if config file exist
     if [ ! -f ./configs/$CONFIG.conf ] ; then
         if [ "" = "$CONFIG" ] ; then
-            printf "Error: No active configuration file found. Please supply configuration file name.\n"
+            printf "Error: Please supply configuration file name or RUNNING for active config.\n"
         else
             printf "Configuration file ./server/$CONFIG.conf does not exist!\nReload Failed.\n"
         fi
