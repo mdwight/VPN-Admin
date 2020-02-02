@@ -13,20 +13,32 @@
 port 1194
 ifconfig 10.8.0.1 255.255.255.0
 ifconfig-pool 10.8.0.101 10.8.0.250
-#
-# Push routes to VPN Clients 
-;push "route 192.168.1.0 255.255.255.0 10.8.0.1 2000"
-;push "route 192.168.9.0 255.255.255.0 10.8.0.2 2000"
 
-# Add routes to server kernel
+# Push route to local LAN. Routes pushed to clients. 
+;push "route 192.168.1.0 255.255.255.0 10.8.0.1 2000"
+
+# The following  network is on a client.
+# Push this route to all clients. 
+;push "route 192.168.9.0 255.255.255.0 10.8.0.2 2000"
+# Also add this route to the kernel.
 ;route 192.168.9.0 255.255.255.0
+
+# ================================================
+# If tcp connection through tunnel hangs enable
+# the following. Try 1200, 1300, 1400. The 
+# 'fragment 1200' parameter has to be enabled on 
+# client side.
+#
+;mssfix 1200
+;fragment 1200
 
 # ================================================
 # Mostly static details.
 #
 dev tun
-proto udp4
+proto udp
 mode server
+duplicate-cn
 tls-server
 key-direction 0
 remote-cert-tls client
