@@ -16,11 +16,19 @@ remote 192.168.1.10 1194
 ;redirect-gateway def1
 
 # ================================================
+# If tcp connection through tunnel hangs enable
+# the following. Try 1200, 1300, 1400. This and
+# the 'mssfix 1200' parameter have to be enabled 
+# on server side.
+#
+;fragment 1200
+
+# ================================================
 # Mostly static details.
 #
 dev tun
 client
-proto udp4
+proto udp
 tls-client
 key-direction 1
 remote-cert-tls server
