@@ -20,7 +20,7 @@ if [ -d ./VPN-Admin-1.0 ] ; then
 fi
 
 # Get easyrsa and copy to proper directory.
-if wget https://github.com/mdwight/VPN-Admin/archive/v1.0.zip ; then
+if wget https://github.com/mdwight/VPN-Admin/archive/refs/heads/v1.0.zip ; then
     unzip v1.0.zip
     cp -r ./VPN-Admin-1.0/* .
     rm -fr ./VPN-Admin-1.0
