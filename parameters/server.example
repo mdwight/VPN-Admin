@@ -15,11 +15,11 @@ ifconfig 10.8.0.1 255.255.255.0
 ifconfig-pool 10.8.0.101 10.8.0.250
 
 # Push route to local LAN. Routes pushed to clients. 
-;push "route 192.168.1.0 255.255.255.0 10.8.0.1 2000"
+;push "route 192.168.1.0 255.255.255.0"
 
 # The following  network is on a client.
 # Push this route to all clients. 
-;push "route 192.168.9.0 255.255.255.0 10.8.0.2 2000"
+;push "route 192.168.9.0 255.255.255.0"
 # Also add this route to the kernel.
 ;route 192.168.9.0 255.255.255.0
 
