@@ -14,6 +14,7 @@ remote 192.168.1.10 1194
 ;remote 203.0.113.1 1194
 ;remote yourhome.dynvpnservice.com 1194
 ;redirect-gateway def1
+;route-gateway 10.8.0.1
 
 # ================================================
 # If tcp connection through tunnel hangs enable
@@ -42,7 +43,7 @@ persist-tun
 
 # ================================================
 # Logging - adjust for testing or debugging.
-status openvpn-status-client.log
-log openvpn-client.log
+status status.log
+log client.log
 verb 3
 mute 20
