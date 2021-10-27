@@ -35,7 +35,7 @@ ifconfig-pool 10.8.0.101 10.8.0.250
 # ================================================
 # Mostly static details.
 #
-dev tun
+dev tun1
 proto udp
 mode server
 duplicate-cn
@@ -58,7 +58,7 @@ persist-tun
 # ================================================
 # Logging - adjust for testing or debugging.
 #
-status openvpn-status-server.log
-log openvpn-server.log
+log server.log
+status status.log
 verb 3
 mute 20
