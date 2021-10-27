@@ -36,8 +36,8 @@ remote-cert-tls server
 nobind
 resolv-retry infinite
 cipher AES-256-CBC
-user nobody
-group nogroup
+;user nobody
+;group nogroup
 persist-key
 persist-tun
 
