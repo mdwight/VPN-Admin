@@ -35,8 +35,7 @@ key-direction 1
 remote-cert-tls server
 nobind
 resolv-retry infinite
-data-ciphers AES-256-CBC
-cipher AES-256-CBC
+cipher AES-256-GCM
 auth-nocache
 ;user nobody
 ;group nogroup
