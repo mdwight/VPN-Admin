@@ -49,7 +49,7 @@ client-to-client
 keepalive 10 120
 client-config-dir ccd
 crl-verify crl.pem
-cipher AES-256-CBC
+cipher AES-256-GCM
 user nobody
 group nogroup
 persist-key
