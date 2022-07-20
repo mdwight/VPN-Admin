@@ -53,7 +53,9 @@ if [ -d ./easy-rsa-3.0.6 ] ; then
 fi
 
 # Get easyrsa3 subdirectory and copy to ./easyrsa3 directory.
-if wget https://github.com/OpenVPN/easy-rsa/archive/v3.0.6.zip ; then
+#if wget https://github.com/OpenVPN/easy-rsa/archive/v3.0.6.zip ; then
+if wget https://github.com/OpenVPN/easy-rsa/archive/refs/heads/v3.0.6.zip ; then
+
     unzip v3.0.6.zip 'easy-rsa-3.0.6/easyrsa3/*'
     cp -r ./easy-rsa-3.0.6/easyrsa3/* ./easyrsa3
     rm -fr easy-rsa-3.0.6
