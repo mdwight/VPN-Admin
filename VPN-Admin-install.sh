@@ -58,10 +58,10 @@ fi
 if wget https://github.com/OpenVPN/easy-rsa/archive/refs/heads/release/3.0.zip ; then
 
 
-    unzip v3.0.zip 'easy-rsa-3.0/easyrsa3/*'
+    unzip 3.0.zip 'easy-rsa-3.0/easyrsa3/*'
     cp -r ./easy-rsa-3.0/easyrsa3/* ./easyrsa3
     rm -fr easy-rsa-3.0
-    rm v3.0.zip
+    rm 3.0.zip
     printf "Installation of easyrsa3 completed successfully.\n"
     exit 0
 else
