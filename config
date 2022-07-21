@@ -243,7 +243,7 @@ function initialize {
 
     # STEP 7 - Generate ta.key
     printf "Generating ta.key\n"
-    openvpn --genkey --secret pki/ta.key
+    /usr/sbin/openvpn --genkey --secret pki/ta.key
 
     # STEP 8 - Generate new certificate authority
     printf "Generating Certificate Authority \n"
