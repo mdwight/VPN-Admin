@@ -1,51 +1,68 @@
 #!/bin/bash
-# 
 # VPN-Admin -- A script base system for managing a small OpenVPN system
 #
 # Copyright (C) 2018 by Matthew Dwight.
 #
-# This code released under version 3 of the GNU GPL; see COPYING and the 
-# LICENSE.GPL for this project for full licensing details.
+# This code released under version 3 of the GNU GPL; see COPYING.md and the
+# LICENSE.md for this project for full licensing details.
 
-# get system variables
-. ./vars
+# Script to manage the configuration of OpenVPN with Easy-RSA3
+
+# Default to nopass for CA and Certificates.
+NOPASS="nopass"
+
+# Set expiry dates on Certificates
+export EASYRSA_CRL_DAYS=7305      # 20 years
+export EASYRSA_CA_EXPIRE=7305     # 20 years
+export EASYRSA_CERT_EXPIRE=7305   # 20 years
+
+# If user want to modify some of the above defaults.
+if [ -f ./vars.sh ] ; then
+    . ./vars.sh
+fi
+
+# Root directory for configuration.
+SETUP_DIR=$PWD
+
+# Bring in shared functions
+. ./shared.sh
 
 function usage {
 
-case "$1" in 
-# HELP for initialize 
+case "$1" in
+# HELP for initialize
     initialize)
     printf "
 Usage: $0 $1 [ASKPASS] [DH]
 
-This script will delete all the configuration, key and certificate files.  The 
-template files and the client configuration files will not be touched.  A new 
+This script will delete all the configuration, key and certificate files.  The
+parameter files and the client configuration files will not be touched.  A new
 CA will then be created along with the tls-auth pre-shared key.  The existing
-Diffie-Hellman parameters file will be retained, if it exists, so it does not 
-need to be regenerated.  The Diffie-Hellman parameters file takes a can take a
-very long time to generate and only needs to be done once.
+Diffie-Hellman parameters file will be retained, if it exists, so it does not
+need to be regenerated.  The Diffie-Hellman parameters file can take a very
+long time to generate and only needs to be done once.
 
 Optional Parameters:
 --------------------
 ASKPASS - If you want to put a pass-phrase on the generated CA private key.
 DH - If you want to generate a new Diffie-Hellman parameters file.
 
-"      
+"
         ;;
-        
+
 # HELP for create
     create)
     printf "
-Usage: $0 $1 certificate_name template [ASKPASS]
+Usage: $0 $1 certificate_name parfile [ASKPASS]
 
-This script will add or regenerate the configuration file for a client or 
+This script will add or regenerate the configuration file for a client or
 server.  If the certificate exist it will be reused, otherwise a new one will
 be generated.  The configuration will have the same name as the certificate.
 
 Required Parameters:
 --------------------
 certificate_name - name get give or used by certificate.
-template - name of template to use.
+parfile - name of parameter file to use.
 
 Optional Parameters:
 --------------------
@@ -55,13 +72,13 @@ Current configuration files:
 ----------------------------\n"
         if [ "$(ls -A $SETUP_DIR/easyrsa3/pki/issued)" ]; then
             find $SETUP_DIR/easyrsa3/pki/issued/*  -printf "%f\n"
-        fi       
+        fi
         printf "
-List of template files:
------------------------\n"
-        count=`ls -1 $SETUP_DIR/templates/*.template 2>/dev/null | wc -l`
+List of parameter files:
+------------------------\n"
+        count=`ls -1 $SETUP_DIR/parameters/*.par 2>/dev/null | wc -l`
         if [ 0 -lt $count ] ; then
-            find $SETUP_DIR/templates/*.template  -printf "%f\n"
+            find $SETUP_DIR/parameters/*.par  -printf "%f\n"
         fi
         printf "\n"
 
@@ -73,7 +90,7 @@ List of template files:
 Usage: $0 $1 certificate_name
 
 
-Deletes a certificate along with the configuration file.  After the 
+Deletes a certificate along with the configuration file.  After the
 Certificate is deleted the Certificate Revocation List is updated.
 
 Required Parameters:
@@ -84,8 +101,8 @@ List of certificate files:
 --------------------------\n"
         if [ "$(ls -A $SETUP_DIR/easyrsa3/pki/issued)" ]; then
             find $SETUP_DIR/easyrsa3/pki/issued/*  -printf "%f\n"
-        fi       
-        
+        fi
+
         printf "\n"
 
         ;;
@@ -95,7 +112,7 @@ List of certificate files:
         printf "
 Usage: $0 $1
 
-Generate the (CRL) Certificate Revocation List file.  This script should not 
+Generate the (CRL) Certificate Revocation List file.  This script should not
 normally be required since this CRL list is generated every time the './remove'
 script is run.  Running it again will not cause any problems.
 
@@ -106,8 +123,8 @@ script is run.  Running it again will not cause any problems.
         printf "
 Usage: $0 $1 key_name [NOPASS]
 
-Allows the private key pass-phrase for a certificate or the Certificate 
-Authority to be changed or removed. The key name will be the same as the 
+Allows the private key pass-phrase for a certificate or the Certificate
+Authority to be changed or removed. The key name will be the same as the
 certificate name and config name.
 
 Required Parameters:
@@ -133,13 +150,13 @@ Usage: $0 $1 command
 
 Available Commands
 ------------------
-initialize - Initialize the system. 
+initialize - Initialize the system.
     create - Create a server or client configuration file.
     delete - Delete a server or client configuration and revoke certificate.
       pass - Change the passphrase on a certificate or ca.
-       crl - Create and updated Certificate Revocaton List.           
+       crl - Create and updated Certificate Revocaton List.
       help - This help.
-      
+
 "
         ;;
 # HELP - Main HELP
@@ -152,44 +169,49 @@ Usage: $0 {initialize|create|delete|passphrase|crl} [name]
 
 Configuration System
 
-initialize - Initialize the system. 
+initialize - Initialize the system.
     create - Create a server or client configuration file.
     delete - Delete a server or client configuration and revoke certificate.
       pass - Change the passphrase on a certificate or ca.
-       crl - Create and updated Certificate Revocaton List.           
+       crl - Create and updated Certificate Revocaton List.
       help - Display more detailed help on the above commands.
-      
+
 "
         ;;
 esac
 }
 
 function initialize {
-    if [ "ASKPASS" == "${1^^}" ] || [ "ASKPASS" == "${2^^}" ]; then 
+    easyrsa_check  # do we even have a system to initialize?
+
+    if [ "ASKPASS" == "${1^^}" ] || [ "ASKPASS" == "${2^^}" ]; then
         NOPASS=""
     fi
 
-    if [ "DH" == "${1^^}" ] || [ "DH" == "${2^^}" ]; then 
+    if [ "DH" == "${1^^}" ] || [ "DH" == "${2^^}" ]; then
         DH=yes
     else
         DH=no
     fi
 
-    # STEP 1 - Verify the system is to be initialized.
-    printf "Initializing the system will remove all keys and certificates.\n"
-    verify "Do you want to initialize the current system (Yes/No) > "
-    if [ 0 != $? ] ; then 
-        exit 1 
-    fi
+    # STEP 1 - Verify the system is to be initialized if already initialized.
+    if [ -f $SETUP_DIR/easyrsa3/pki/ca.crt ] ; then  #
+        printf "It appears the system has already been initialized.  Initializing\n"
+        printf "the system will remove all current keys and certificates. Are you\n"
+        verify "Sure you want to initialize the system (Yes/No) > "
+        if [ 0 != $? ] ; then
+            exit 1
+        fi
 
-    verify "                                Are you sure (Yes/No) > "
-    if [ 0 != $? ] ; then 
-        exit 1 
+        verify "                  Are you really sure? (Yes/No) > "
+        if [ 0 != $? ] ; then
+            exit 1
+        fi
+        printf "Starting Initialization.\n"
     fi
-    printf "Starting Initialization.\n"
 
     # STEP 2 - Backup ./easyrsa3/pki/dh.pem if it exists.
-    if [ -f ./easyrsa3/pki/dh.pem ] ; then 
+    if [ -f ./easyrsa3/pki/dh.pem ] ; then
         if [ -f ./dh.pem ] ; then
             rm ./dh.pem
         fi
@@ -238,23 +260,23 @@ function initialize {
         printf "Generating dh.pem file.\n"
         ./easyrsa gen-dh
     fi
+    cd $SETUP_DIR
 
     # STEP 10 - Generate a Certificate Revocation List
-    printf "Generating Certificate Revocation List.\n"
-    echo "unique_subject = yes" > ./pki/index.txt.attr  # this is a bug fix
-    if ./easyrsa gen-crl ; then 
-        printf "Generation of CRL file was succesfull.\n"
-    else
-        printf "WARNING: Generation of Certificate Revocation List has FAILED.\n"
-        printf "Run ./config crl to generate Certificate Revocation List.\n"
-    fi
-
-    cd $SETUP_DIR
+    crl
 
     printf "System is initialized.\n\n"
 }
 
 function create {
+    # $1 - certificate name
+    # $2 - parameter file name
+    # Create Certificates if not already issued.
+    # Saves config files with the same name as the certificate.
+
+    easyrsa_check   # has easyrsa3 been installed?
+    ca_check        # has easyrsa3 been initialized?
+
     if [ "ASKPASS" == "${3^^}" ] ; then  # requesting to add pass-phrase
         NOPASS=""
     fi
@@ -270,246 +292,253 @@ function create {
         exit 1
     fi
 
-    printf "\nStarting configuration file generation for \'$1\' =================================\n"
-    # STEP 3 - check to see if template file exists
-    TEMPLATE="${2//.template}"
-    if [ ! -f ./templates/$TEMPLATE.template ];
+    printf "Note: Starting configuration file generation for $1.conf\n"
+    # STEP 3 - check to see if parameter file exists
+    PARFILE="${2//.par}"
+    if [ ! -f ./parameters/$PARFILE.par ];
         then
-            printf "Error TMPL: \'$TEMPLATE\' does not exist.\n"
+            printf "Error Parameter: $PARFILE.par does not exist.\n"
             exit 1
     fi
-    printf "Template \'$TEMPLATE\' found.\n"
+    printf "OK: Parameter $PARFILE.par found.\n"
 
-    # STEP 4 - find out weather it is a client or server template.
-    if  grep -q 'remote-cert-tls client' './templates/'$TEMPLATE'.template' ; then
-        printf "Using Server template \'$TEMPLATE\'.\n"
-        TMPLTYPE="Server"
-    elif grep -q 'remote-cert-tls server' './templates/'$TEMPLATE'.template' ; then
-        printf "Using Client template \'$TEMPLATE\'.\n"
-        TMPLTYPE="Client"
-        else
-        printf "Error: \'$TEMPLATE\' is an unknown type of template.\n"
+    # STEP 4 - find out whether it is a client or server parameter file.
+    parameter_type './parameters/'$PARFILE'.par'
+    local RETURN=$?
+    if [ "1" == $RETURN ] ; then
+        PARMFILETYPE="Server"
+    elif [ "2" == $RETURN ] ; then
+        PARMFILETYPE="Client"
+    elif [ "3" == $RETURN ] ; then
+        printf "Error: $PARFILE.par is an unknown type of parameter file.\n"
+        exit 1
+    else
+        printf "Error: $PARFILE.par not found.\n"
         exit 1
     fi
-
+    printf "Note: Parameter File $PARFILE.par is for a $PARMFILETYPE.\n"
 
     # STEP 5 - check to see if diffie-hellman key file exists
     if [ ! -f ./easyrsa3/pki/dh.pem ] ; then
-        printf "Error DH: \'dh.pem\' does not exist. System not initialized?\n"
+        printf "Error DH: dh.pem does not exist. System not initialized?\n"
         exit 1
     fi
+    printf "OK: dh.pem exists\n"
 
     # STEP 6 - check to see if tls-auth key file exists
     if [ ! -f ./easyrsa3/pki/ta.key ] ; then
-        printf "Error TA: \'ta.key\' does not exist. System not initialized?\n"
+        printf "Error TA: ta.key does not exist. System not initialized?\n"
         exit 1
     fi
+    printf "OK: ta.key exists\n"
 
     # STEP 7 - check to see if certificate authority key exists
     if [ ! -f ./easyrsa3/pki/private/ca.key ] ; then
-        printf "Error CA: \'ca.key\' does not exist. System not initialized?\n"
+        printf "Error CA: ca.key does not exist. System not initialized?\n"
         exit 1
     fi
-
+    printf "OK: ca.key exits\n"
 
     # STEP 8 - see if certificate already exists. If so then skip creating another one.
-    CERT="${1//.crt}"
-    if [ ! -f ./easyrsa3/pki/issued/$CERT.crt ] ; then
+    CERTFILE="${1//.crt}"
+    if [ ! -f ./easyrsa3/pki/issued/$CERTFILE.crt ] ; then
        # if certificate does not exist remove any intermediate key and req files.
-        if [ -f ./easyrsa3/pki/private/$CERT.key ] ; then
-            rm ./easyrsa3/pki/private/$CERT.key
-            printf "Cleanup: Removing file ./pki/private/$CERT.key\n"
+        if [ -f ./easyrsa3/pki/private/$CERTFILE.key ] ; then
+            rm ./easyrsa3/pki/private/$CERTFILE.key
+            printf "Cleanup: Removing file ./pki/private/$CERTFILE.key\n"
         fi
-        if [ -f ./easyrsa3/pki/reqs/$CERT.req ] ; then
-            rm ./easyrsa3/pki/reqs/$CERT.req
-            printf "Cleanup: Removing file ./pki/reqs/$CERT.req\n"
+        if [ -f ./easyrsa3/pki/reqs/$CERTFILE.req ] ; then
+            rm ./easyrsa3/pki/reqs/$CERTFILE.req
+            printf "Cleanup: Removing file ./pki/reqs/$CERTFILE.req\n"
         fi
         # generate new key files.
         cd ./easyrsa3/
-        if [ "Server" == "$TMPLTYPE" ] ; then 
-            printf "Creating Server Certificate for $CERT\n"
-            ./easyrsa build-server-full $CERT $NOPASS
-        elif [ "Client" == "$TMPLTYPE" ] ; then
-            printf "Creating Client Certificate for $CERT\n"
-            ./easyrsa build-client-full $CERT $NOPASS
+        if [ "Server" == "$PARMFILETYPE" ] ; then
+            printf "Note: Creating Server Certificate for $CERTFILE\n"
+            if ./easyrsa build-server-full $CERTFILE $NOPASS ; then
+                printf "OK: Server certificate $CERTFILE.crt was created.\n"
+            else
+                printf "Error: Server certificate $CERTFILE.crt was not created.\n"
+                exit 1
+            fi
+        elif [ "Client" == "$PARMFILETYPE" ] ; then
+            printf "Note: Creating Client Certificate for $CERTFILE\n"
+            if ./easyrsa build-client-full $CERTFILE $NOPASS ; then
+                printf "OK: Client certificate $CERTFILE.crt was created.\n"
+            else
+                printf "Error: Client certificate $CERTFILE.crt was not created.\n"
+                exit 1
+            fi
         else
             # we should never get here.
-            printf "Error: Script Error - unknown template type $TMPLTYPE defined.\n"
+            printf "Error: Script Error - unknown parameter file type $PARMFILETYPE defined.\n"
             exit 1
         fi
         cd ..
         #
     else
-        printf "Certificate \'$CERT\' already exists. Reusing certificate.\n"
+        printf "Note: Certificate $CERTFILE.crt already exists. Reusing certificate.\n"
     fi
-
 
     # STEP 9 - check to see if certificate is created.
-    if [ ! -f ./easyrsa3/pki/issued/$CERT.crt ] ; then
-        printf "Error CRT: \'$CERT\' was not created.\n"
+    if [ ! -f ./easyrsa3/pki/issued/$CERTFILE.crt ] ; then
+        printf "Error: Certificate for $CERTFILE was not created.\n"
         exit 1
     fi
+    printf "OK: Certificate for $CERTFILE is available.\n"
 
-    # STEP 10 - check to see if the certificate type matches the template type. 
-    if [ "Server" == "$TMPLTYPE" ] ; then
-        if ! grep -q 'TLS Web Server Authentication' './easyrsa3/pki/issued/'$CERT'.crt'  ; then
-            echo "Return: $?\n"
-            printf "Error CRT: \'$CERT\' is not for a Server.\n"
-            if grep -q 'TLS Web Client Authentication' './easyrsa3/pki/issued/'$CERT'.crt' ; then
-                printf "           \'$CERT\' is a Client certificate.\n"
-                printf "           Delete Certificate \'$CERT\' first.\n"
-            fi
-            exit 1
-        fi
-    elif [ "Client" == "$TMPLTYPE" ] ; then
-        if  ! grep -q 'TLS Web Client Authentication' './easyrsa3/pki/issued/'$CERT'.crt' ; then
-            printf "Error CRT: \'$CERT\' is not for a Client.\n"
-            if grep -q 'TLS Web Server Authentication' './easyrsa3/pki/issued/'$CERT'.crt' ; then
-                printf "           \'$CERT\' is a Server certificate.\n"
-                printf "           Delete Certificate \'$CERT\' first.\n"
-            fi
-            exit 1
-        fi
+    # STEP 10 - check to see if the certificate type matches the parameter file type.
+    certificate_type './easyrsa3/pki/issued/'$CERTFILE'.crt'
+    local RETURN=$?
+    if [ "1" == $RETURN ] ; then
+        CERTFILETYPE="Server"
+    elif [ "2" == $RETURN ] ; then
+        CERTFILETYPE="Client"
+    elif [ "3" == $RETURN ] ; then
+        printf "Error: \'$CERTFILE\'.crt is an unknown type of certificate file.\n"
+        exit 1
     else
-        # we should never get here.
-        printf "Error: Script Error - unknown template type $TMPLTYPE defined.\n"
+        printf "Error: \'$CERTFILE\'.crt not found.\n"
         exit 1
     fi
-    printf "Template and Certificate Type Match.\n"
-
+    if [ $CERTFILETYPE != $PARMFILETYPE ] ; then
+        printf "Error: Certificate type and Parameter file type don't match.\n"
+        printf "Note:  The previously issued certificate $CERTFILE.crt is for a $CERTFILETYPE.\n"
+        printf "Note:  The parameter file $PARFILE.par is for a $PARMFILETYPE.\n"
+        exit 1
+    fi
+    printf "OK: Template and Certificate type match.\n"
 
     # STEP 11 - check to see if key file exists.
     #          note: key file should exist if certificate exist.
-    if [ ! -f ./easyrsa3/pki/private/$CERT.key ] ; then
-        printf "Error KEY: ./easyrsa3/pki/private/$CERT.key does not exist. Try ./delete first.\n"
+    if [ ! -f ./easyrsa3/pki/private/$CERTFILE.key ] ; then
+        printf "Error: $CERTFILE.key does not exist but $CERTFILE.crt does.  Try ./delete first to correct.\n"
         exit 1
     fi
 
-
     # STEP 12 - make sure the "config" sub directory exists. If not create it.
     if [ ! -d configs ] ; then
-        printf "Creating directory ./configs for config files.\n"
+        printf "Note: Creating directory ./configs for config files.\n"
         mkdir configs
     fi
 
-    # STEP 13 - make sure the "ccd" directory exists. If not create it.
-    if [ ! -d ccd ] ; then
-        printf "Creating directory ./ccd for server-side client config files.\n"
-        mkdir ccd
-    fi
-
-
-    # STEP 14 - We seem to have everything we need to create configuration file.
+    # STEP 13 - We seem to have everything we need to create configuration file.
     #
-    # copy over template
-    cp ./templates/$TEMPLATE.template ./configs/$CERT.conf
+    # copy over parameter file
+    printf "Note: Creating file ./configs/$CERTFILE.conf\n"
+    printf "Note: Adding file ./parameters/$PARFILE.par\n"
+    cp ./parameters/$PARFILE.par ./configs/$CERTFILE.conf
     #
     # Make sure we start on a new line for keys.
-    printf '\n#\n' >> ./configs/$CERT.conf
-    printf "# !!!!! Do not change anything below this line. !!!!!\n" >> ./configs/$CERT.conf
+    printf '\n#\n' >> ./configs/$CERTFILE.conf
+    printf "# !!!!! Do not change anything below this line. !!!!!\n" >> ./configs/$CERTFILE.conf
     #
     # Add diffie-helman for server configs only.
-    if [ "Server" == "$TMPLTYPE" ] ; then
-        printf '<dh>\n' >> ./configs/$CERT.conf
-        cat ./easyrsa3/pki/dh.pem >> ./configs/$CERT.conf
-        printf '</dh>\n#\n' >> ./configs/$CERT.conf
+    if [ "Server" == "$PARMFILETYPE" ] ; then
+        printf "Note: Adding file ./eashrsa3/pki/dh.pem\n"
+        printf '<dh>\n' >> ./configs/$CERTFILE.conf
+        cat ./easyrsa3/pki/dh.pem >> ./configs/$CERTFILE.conf
+        printf '</dh>\n#\n' >> ./configs/$CERTFILE.conf
     fi
     #
     # Add tls-authority key
-    printf '<tls-auth>\n' >> ./configs/$CERT.conf
-    cat ./easyrsa3/pki/ta.key >> ./configs/$CERT.conf
-    printf '</tls-auth>\n#\n' >> ./configs/$CERT.conf
+    printf "Note: Adding file ./eashrsa3/pki/ta.key\n"
+    printf '<tls-auth>\n' >> ./configs/$CERTFILE.conf
+    cat ./easyrsa3/pki/ta.key >> ./configs/$CERTFILE.conf
+    printf '</tls-auth>\n#\n' >> ./configs/$CERTFILE.conf
     #
     # Add certificate authority
-    printf '<ca>\n' >> ./configs/$CERT.conf
-    cat ./easyrsa3/pki/ca.crt >> ./configs/$CERT.conf
-    printf '</ca>\n#\n' >> ./configs/$CERT.conf
+    printf "Note: Adding file ./eashrsa3/pki/ca.crt\n"
+    printf '<ca>\n' >> ./configs/$CERTFILE.conf
+    cat ./easyrsa3/pki/ca.crt >> ./configs/$CERTFILE.conf
+    printf '</ca>\n#\n' >> ./configs/$CERTFILE.conf
     #
     # Add certificate
-    printf '<cert>\n' >> ./configs/$CERT.conf
-    cat ./easyrsa3/pki/issued/$CERT.crt >> ./configs/$CERT.conf
-    printf '</cert>\n#\n' >> ./configs/$CERT.conf
+    printf '<cert>\n' >> ./configs/$CERTFILE.conf
+    printf "Note: Adding file ./eashrsa3/pki/$CERTFILE.crt\n"
+    cat ./easyrsa3/pki/issued/$CERTFILE.crt >> ./configs/$CERTFILE.conf
+    printf '</cert>\n#\n' >> ./configs/$CERTFILE.conf
     #
     # Add key
-    printf '<key>\n' >> ./configs/$CERT.conf
-    cat ./easyrsa3/pki/private/$CERT.key >> ./configs/$CERT.conf
-    printf '</key>\n#\n' >> ./configs/$CERT.conf
+    printf '<key>\n' >> ./configs/$CERTFILE.conf
+    printf "Note: Adding file ./eashrsa3/pki/$CERTFILE.key\n"
+    cat ./easyrsa3/pki/private/$CERTFILE.key >> ./configs/$CERTFILE.conf
+    printf '</key>\n#\n' >> ./configs/$CERTFILE.conf
     #
-    printf "Configuration file ./configs/$CERT.conf created.\n"
+    printf "OK: Configuration file ./configs/$CERTFILE.conf created.\n"
     #
     # Create a .ovpn configuation file also
-    cp ./configs/$CERT.conf ./configs/$CERT.ovpn
-    todos ./configs/$CERT.ovpn
-    printf "Configuration file ./configs/$CERT.ovpn created.\n"
+    printf "Note: Generating ./configs/$CERTFILE.ovpn from ./configs/$CERTFILE.conf\n"
+    cp ./configs/$CERTFILE.conf ./configs/$CERTFILE.ovpn
+    todos ./configs/$CERTFILE.ovpn
+    printf "OK: Configuration file ./configs/$CERTFILE.ovpn created.\n"
 }
 
 function delete {
+    easyrsa_check   # has easyrsa3 been installed?
+    ca_check        # has easyrsa3 been initialized?
+
     if [ $# -lt 1 ] ; then   # need to supply atleast one parameter.
         usage delete
         exit 1
     fi
 
     # STEP 2 - Drop extension to certificate if supplied
-    CERT="${1//.crt}"
+    CERTFILE="${1//.crt}"
 
 
     # STEP 3 - Does Certificate Exist
-    if [ ! -f ./easyrsa3/pki/issued/$CERT.crt ] ; then
+    if [ ! -f ./easyrsa3/pki/issued/$CERTFILE.crt ] ; then
        printf "Error: Certificate file not found.\n"
        exit 1
     fi
 
     # STEP 4 - Revoke Certificate
-    printf "Removing certificate $CERT.crt\n"
+    printf "Note: Revoking certificate $CERTFILE.crt\n"
     cd ./easyrsa3/
-    ./easyrsa revoke $CERT
+    ./easyrsa revoke $CERTFILE
     r1=$?
-    cd ..
+    cd $SETUP_DIR
 
     # STEP 5 - If revoke successful then rename certificate and delete private key and request
     if [ $r1 -eq 0 ] ;
         then
             if [ ! -d ./easyrsa3/pki/revoked ] ; then
+                printf "Note: making directory for revoked certificates.\n"
                 mkdir ./easyrsa3/pki/revoked
             fi
-            printf "OK: Certificate $CERT has been revoked.\n"
+            printf "OK: Certificate $CERTFILE has been revoked.\n"
             cd ./easyrsa3/pki
-            cp --backup=numbered issued/$CERT.crt revoked/$CERT.revoked.crt
-            rm issued/$CERT.crt
-            rm private/$CERT.key
-            rm reqs/$CERT.req
-            cd ../..
+            cp --backup=numbered issued/$CERTFILE.crt revoked/$CERTFILE.revoked.crt
+            print "Note: Removing certificate and key files for $CERTFILE.\n"
+            rm issued/$CERTFILE.crt
+            rm private/$CERTFILE.key
+            rm reqs/$CERTFILE.req
+            cd $SETUP_DIR
         else
             printf "Error: A certificate removal problem occurred.\n"
             exit 1
     fi
 
     # STEP 6 - Look for and remove config files.
-    if [ -f ./configs/$CERT.conf ] ; then
-        printf "Deleting ./configs/$CERT.conf\n"
-        rm ./configs/$CERT.conf
+    if [ -f ./configs/$CERTFILE.conf ] ; then
+        printf "Note: Deleting ./configs/$CERTFILE.conf\n"
+        rm ./configs/$CERTFILE.conf
     fi
 
-    if [ -f ./configs/$CERT.ovpn ] ; then
-        printf "Deleting ./configs/$CERT.ovpn\n"
-        rm ./configs/$CERT.ovpn
+    if [ -f ./configs/$CERTFILE.ovpn ] ; then
+        printf "Note: Deleting ./configs/$CERTFILE.ovpn\n"
+        rm ./configs/$CERTFILE.ovpn
     fi
 
     # STEP 7 - Generate a Certificate Revocation List
-    printf "Generating Certificate Revocation List\n"
-    export EASYRSA_CRL_DAYS=3650
-    cd ./easyrsa3/
-    if ./easyrsa gen-crl ; then 
-        printf "Generation of CRL file was successful.\n\n"
-    else
-        printf "WARNING: Generation of Certificate Revocation List has FAILED.\n"
-        printf "Run ./config crl to generate Certificate Revocation List.\n\n"
-    fi
-    cd ..
-
+    crl
 }
 
 function pass {
+    easyrsa_check   # has easyrsa3 been installed?
+    ca_check        # has easyrsa3 been initialized?
+
     # STEP 1 - Check parameters supplied to script.
     if [ $# -lt 1 ] ; then # needs at least one parameters supplied
         usage pass
@@ -519,7 +548,6 @@ function pass {
     if [ "NOPASS" == "${2^^}" ] ; then  # requesting to remove password
         NOPASS=""
     fi
-
 
     # STEP 2 - Drop extension to key file if supplied
     KEY="${1//.key}"
@@ -536,37 +564,43 @@ function pass {
         shred $KEY.key
         mv $KEY.new $KEY.key
         if [ "NOPASS" == "${2^^}" ] ; then
-            printf "Pass-Phrase removed from $KEY.\n"
+            printf "OK: Pass-Phrase removed from $KEY.\n"
         else
-            printf "Password changed for $KEY.\n"
+            printf "OK: Pass-Phrase changed for $KEY.\n"
         fi
+    else
+        printf "Error: Pass-Phrase has not changed.\n"
     fi
 
     cd $SETUP_DIR
 }
 
 function crl {
+    easyrsa_check   # has easyrsa3 been installed?
+    ca_check        # has easyrsa3 been initialized?
+
     # Generate a new crl.pem file
     cd ./easyrsa3/
-    printf "Generating new Certificate Revocation List\n"
+    printf "Note: Generating new Certificate Revocation List\n"
 
     # apply bug fix
     if [ ! -f ./pki/index.txt.attr ]; then
-        printf "Applying bug fix\n"
+        printf "Note: Creating file ./easyrsa3/pki/index.txt.attr\n"
         echo "unique_subject = yes" > ./pki/index.txt.attr
     fi
 
     # generate new crl file and check results.
-    if ./easyrsa gen-crl ; then 
-        printf "Generation of CRL file was successful.\n"
+    if ./easyrsa gen-crl ; then
+        printf "OK: Generation of CRL file was successful.\n"
     else
-        printf "WARNING: Generation of Certificate Revocation List has FAILED.\n"
+        printf "Error: Generation of Certificate Revocation List has FAILED.\n"
+        printf "Note:  Run ./config crl again to generated CRL.\n"
     fi
-    cd ..
+    cd $SETUP_DIR
 }
 
 # Call the requested function.
-case "$1" in 
+case "$1" in
     initialize)
         initialize $2 $3
         ;;
@@ -574,10 +608,10 @@ case "$1" in
         create $2 $3 $4
         ;;
     delete)
-        delete $2 
+        delete $2
         ;;
     crl)
-        crl 
+        crl
         ;;
     pass)
         pass $2 $3

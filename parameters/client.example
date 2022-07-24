@@ -1,5 +1,5 @@
 # ***************************************************************
-# * Client side configuration template for use with the         *
+# * Client side configuration parameters for use with the       *
 # * OpenVPN setup guide from Matthew Dwight.                    *
 # * The setup guides can be found at:                           *
 # * http://www.mdwight.com/OpenVPN                              *
@@ -10,10 +10,19 @@
 # ================================================
 # Variable depending on topology.
 #
-remote 10.1.1.3 2294
-;remote 203.0.113.2 2294
-;remote vpntest.selfip.org 2294
+remote 192.168.1.10 1194
+;remote 203.0.113.1 1194
+;remote yourhome.dynvpnservice.com 1194
 ;redirect-gateway def1
+;route-gateway 10.8.0.1
+
+# ================================================
+# If tcp connection through tunnel hangs enable
+# the following. Try 1200, 1300, 1400. This and
+# the 'mssfix 1200' parameter have to be enabled 
+# on server side.
+#
+;fragment 1200
 
 # ================================================
 # Mostly static details.
@@ -26,15 +35,16 @@ key-direction 1
 remote-cert-tls server
 nobind
 resolv-retry infinite
-cipher AES-256-CBC
-user nobody
-group nogroup
+cipher AES-256-GCM
+auth-nocache
+;user nobody
+;group nogroup
 persist-key
 persist-tun
 
 # ================================================
 # Logging - adjust for testing or debugging.
-status openvpn-status-client.log
-log openvpn-client.log
+status status.log
+log client.log
 verb 3
 mute 20

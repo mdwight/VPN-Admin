@@ -1,5 +1,14 @@
 # Client configuration files.  The file needs to have the 
 # same name as the clients common name.
 #
+# VPN static IP Address for client
 ;ifconfig-push 10.7.6.2 255.255.255.0
+
+# This client has this network. Add to internal routes on OpenVPN server.
 ;iroute 10.1.2.0 255.255.255.0
+
+# Route all traffic on this client to the OpenVPN Server.
+;push "redirect-gateway def1"
+
+# Set this clients DNS address
+;push "dhcp-option DNS 8.8.8.8"

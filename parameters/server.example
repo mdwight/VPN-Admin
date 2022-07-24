@@ -1,5 +1,5 @@
 # ***************************************************************
-# * Server side configuration template for use with the         *
+# * Server side configuration parameters for use with the       *
 # * OpenVPN setup guide from Matthew Dwight.                    *
 # * The setup guides can be found at:                           *
 # * http://www.mdwight.com/OpenVPN                              *
@@ -10,23 +10,35 @@
 # ================================================
 # Variable depending on topology.
 #
-port 2294
-ifconfig 10.7.6.1 255.255.255.0
-ifconfig-pool 10.7.6.101 10.7.6.250
-#
-# Push routes to VPN Clients 
-;push "route 10.1.1.0 255.255.255.0 10.7.6.1 2000"
-;push "route 10.1.2.0 255.255.255.0 10.7.6.2 2000"
+port 1194
+ifconfig 10.8.0.1 255.255.255.0
+ifconfig-pool 10.8.0.101 10.8.0.250
 
-# Add routes to server kernel
-;route 10.1.2.0 255.255.255.0
+# Push route to local LAN. Routes pushed to clients. 
+;push "route 192.168.1.0 255.255.255.0"
+
+# The following  network is on a client.
+# Push this route to all clients. 
+;push "route 192.168.9.0 255.255.255.0"
+# Also add this route to the kernel.
+;route 192.168.9.0 255.255.255.0
+
+# ================================================
+# If tcp connection through tunnel hangs enable
+# the following. Try 1200, 1300, 1400. The 
+# 'fragment 1200' parameter has to be enabled on 
+# client side.
+#
+;mssfix 1200
+;fragment 1200
 
 # ================================================
 # Mostly static details.
 #
-dev tun
+dev tun1
 proto udp
 mode server
+duplicate-cn
 tls-server
 key-direction 0
 remote-cert-tls client
@@ -37,7 +49,7 @@ client-to-client
 keepalive 10 120
 client-config-dir ccd
 crl-verify crl.pem
-cipher AES-256-CBC
+cipher AES-256-GCM
 user nobody
 group nogroup
 persist-key
@@ -46,7 +58,7 @@ persist-tun
 # ================================================
 # Logging - adjust for testing or debugging.
 #
-status openvpn-status-server.log
-log openvpn-server.log
+log server.log
+status status.log
 verb 3
 mute 20

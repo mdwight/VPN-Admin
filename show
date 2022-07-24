@@ -1,15 +1,26 @@
 #!/bin/bash
-
 # VPN-Admin -- A script base system for managing a small OpenVPN system
 #
 # Copyright (C) 2018 by Matthew Dwight.
 #
-# This code released under version 3 of the GNU GPL; see COPYING and the
-# LICENSE.GPL for this project for full licensing details.
-#
+# This code released under version 3 of the GNU GPL; see COPYING.md and the
+# LICENSE.md for this project for full licensing details.
 
-# get system variables
-. ./vars
+# Script to display the various configuration and log files.
+
+# Main directories for setup and system.
+SYSTEM_DIR="/etc/openvpn"
+
+# If user want to modify some of the defaults.
+if [ -f ./vars.sh ] ; then
+    . ./vars.sh
+fi
+
+# Root directory for configuration.
+SETUP_DIR=$PWD
+
+# Bring in shared functions
+. ./shared.sh
 
 function usage {
     printf "
@@ -19,12 +30,12 @@ Configuration System Commands
              ca - View the Certificate Authority
             crl - View the certificate revocation list
           certs - View a list of certificates
-    cert {name} - View a specific certificate 
+    cert {name} - View a specific certificate
         configs - View a list of configuration files
   config {name} - View a specific configuration file
-      templates - View a list of templates
-template {name} - View a specific template
-   
+       parfiles - View a list of parameters files
+ parfile {name} - View a specific parameters file
+
 Running System Commands
       status - View the current status of OpenVPN
          log - View the main log file for OpenVPN
@@ -36,30 +47,33 @@ Running System Commands
 }
 
 function ca {
+    easyrsa_check
     ca_check
     openssl x509 -in ./easyrsa3/pki/ca.crt -text
     exit 0
 }
 
 function crl {
+    easyrsa_check
     ca_check
     if [ -f $SETUP_DIR/easyrsa3/pki/crl.pem ] ; then
         openssl crl -in ./easyrsa3/pki/crl.pem -noout -text
     else
         printf "The certificate revocation list has not been created yet.\n"
         printf "Run ./create-crl to generate list.\n"
-    fi    
+    fi
     exit 0
 }
 
 function cert {
+    easyrsa_check
     ca_check
     if [ "" == "$1" ] ; then
         printf "Current Certificates:\n---------------------\n"
         if [ -d "$SETUP_DIR/easyrsa3/pki/issued" ] ; then
             if [ "$(ls -A $SETUP_DIR/easyrsa3/pki/issued)" ]; then
                 find $SETUP_DIR/easyrsa3/pki/issued/*.crt  -printf "%f\n"
-            fi       
+            fi
         fi
     else
         if [ ${1:(-4)} == ".crt" ]
@@ -68,7 +82,7 @@ function cert {
             else
                 fn="$1.crt"
         fi
-        openssl x509 -in ./easyrsa3/pki/issued/$fn -text     
+        openssl x509 -in ./easyrsa3/pki/issued/$fn -text
     fi
     return 0
 }
@@ -82,10 +96,10 @@ function config {
                 find $SETUP_DIR/configs/*.conf  -printf "%f\n"
             else
                 printf "No config files found.\n"
-            fi       
+            fi
         fi
     else
-        if [ ${1:(-5)} == ".conf" ] ; 
+        if [ ${1:(-5)} == ".conf" ] ;
             then
                 fn=$1
             else
@@ -94,32 +108,32 @@ function config {
         if [ -f $SETUP_DIR/configs/$fn ] ; then
             cat $SETUP_DIR/configs/$fn
         fi
-    fi    
+    fi
     return 0
 }
 
-function template {
+function parfile {
     if [ "" == "$1" ]; then
-        printf "Current template files:\n-----------------------\n"
-        if [ -d "$SETUP_DIR/templates" ] ; then
-            count=`ls -1 $SETUP_DIR/templates/*.template 2>/dev/null | wc -l`
+        printf "Current parameter files:\n-----------------------\n"
+        if [ -d "$SETUP_DIR/parameters" ] ; then
+            count=`ls -1 $SETUP_DIR/parameters/*.par 2>/dev/null | wc -l`
             if [ $count != 0 ]; then
-                find $SETUP_DIR/templates/*.template  -printf "%f\n"
+                find $SETUP_DIR/parameters/*.par  -printf "%f\n"
             else
-                printf "No templates files found\n"
-            fi       
+                printf "No parameters files found\n"
+            fi
         fi
     else
-        if [ ${1:(-9)} == ".template" ] ; 
+        if [ ${1:(-9)} == ".par" ] ;
             then
                 fn=$1
             else
-                fn="$1.template"
+                fn="$1.par"
         fi
-        if [ -f $SETUP_DIR/templates/$fn ] ; then
-            cat $SETUP_DIR/templates/$fn
+        if [ -f $SETUP_DIR/parameters/$fn ] ; then
+            cat $SETUP_DIR/parameters/$fn
         fi
-    fi    
+    fi
     return 0
 }
 
@@ -133,13 +147,13 @@ function status {
 
 function log {
     sudo_check
-    sudo cat /etc/openvpn/openvpn-server.log
+    sudo cat $SYSTEM_DIR/openvpn-server.log
     exit 0
 }
 
 function statlog {
     sudo_check
-    sudo cat /etc/openvpn/openvpn-status-server.log
+    sudo cat $SYSTEM_DIR/openvpn-status-server.log
     exit 0
 }
 
@@ -151,12 +165,14 @@ function syslog {
 
 function  port {
     sudo_check
-    sudo sudo lsof -i 4 | grep openvpn
+    sudo netstat -pln | grep openvpn
+    sudo netstat -pln | grep sshd
     exit 0
+
 }
 
 # Call the requested function.
-case "$1" in 
+case "$1" in
     ca)
         ca
         ;;
@@ -175,11 +191,11 @@ case "$1" in
     configs)
         config $2
         ;;
-    templates)
-        template $2
+    parfiles)
+        parfile $2
         ;;
-    template)
-        template $2
+    parafile)
+        parfile $2
         ;;
     status)
         status
@@ -200,4 +216,4 @@ case "$1" in
         usage
         ;;
 esac
-exit 1 
+exit 1
